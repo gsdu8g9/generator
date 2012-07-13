@@ -7,7 +7,7 @@ import org.windom.generator.definition.Nonterminal;
 
 public class Mapper implements Visitor, Evaluator {
 
-	private Map<String,Nonterminal> nodeMap = new HashMap<String,Nonterminal>();
+	private final Map<String,Nonterminal> nodeMap = new HashMap<String,Nonterminal>();
 	
 	@Override
 	public boolean prune(Nonterminal node) {
