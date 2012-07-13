@@ -1,0 +1,6 @@
+
+S -> title | next | cancel; # csak hogy ne dobjon warningot
+
+title -> 'Bolcsesseg' | 'Igazsag' | 'Jotanacs' | 'Jo tudni' | 'Okossag' | 'Eszesseg';
+next -> 'Meg egyet' | 'Kovetkezo' | 'Tanits';
+cancel -> 'Eleg volt' | 'Eleg a bolondsagbol' | 'Ez eleg is lesz (mara)';

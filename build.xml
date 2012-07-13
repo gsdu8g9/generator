@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build-jar" name="generator">
+	
+    <target name="build-jar">
+    	<mkdir dir="dist" />
+        <jar destfile="dist/generator.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="test.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="bin"/>
+        </jar>
+    </target>
+	
+</project>
