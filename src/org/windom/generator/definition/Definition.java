@@ -1,10 +1,10 @@
 package org.windom.generator.definition;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
+
+import org.windom.generator.definition.traversal.Mapper;
+import org.windom.generator.definition.traversal.Traversal;
 
 public class Definition {
 
@@ -21,21 +21,9 @@ public class Definition {
 	
 	private Map<String,Nonterminal> getNodeMap() {
 		if (nodeMap == null) {
-			nodeMap = new HashMap<String,Nonterminal>();
-			Queue<Nonterminal> queuedNodes = new LinkedList<Nonterminal>();
-			queuedNodes.add(start);
-			do {
-				Nonterminal node = queuedNodes.remove();
-				nodeMap.put(node.getName(), node);
-				for (Rule rule : node.getRules()) {
-					for (Node rightNode : rule.getRight()) {
-						if (rightNode instanceof Nonterminal &&
-								!nodeMap.containsKey(((Nonterminal) rightNode).getName())) {
-							queuedNodes.add((Nonterminal) rightNode);
-						}
-					}
-				}
-			} while (!queuedNodes.isEmpty());
+			Mapper nodeMapper = new Mapper();
+			Traversal.breadthFirst(start, nodeMapper, nodeMapper);
+			nodeMap = nodeMapper.getNodeMap();
 		}
 		return nodeMap;
 	}
