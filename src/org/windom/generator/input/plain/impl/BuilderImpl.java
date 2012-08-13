@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
@@ -14,6 +16,8 @@ import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Builder;
 
 public class BuilderImpl implements Builder {
+	
+	private static final Logger log = LoggerFactory.getLogger(BuilderImpl.class);
 	
 	private final Map <String,Nonterminal> nodeMap = new HashMap<String,Nonterminal>();
 	private Nonterminal start = null;
@@ -42,7 +46,7 @@ public class BuilderImpl implements Builder {
 			if (!node.getRules().contains(rule)) {
 				node.getRules().add(rule);
 			} else {
-				System.out.println("Warning: ignoring duplicate rule: " + rule);
+				log.warn("Ignoring duplicate rule: {}",rule);
 			}
 		}
 		if (start == null && left != null) {
@@ -81,7 +85,7 @@ public class BuilderImpl implements Builder {
 		//
 		for (Nonterminal node : nodeMap.values()) {
 			if (!accessibleNodes.contains(node)) {
-				System.out.println("Warning: unreachable node: " + node);
+				log.warn("Unreachable node: {}",node);
 			}
 		}
 		//
