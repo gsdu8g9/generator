@@ -35,7 +35,7 @@ public class IndentedLogger {
 	}
 	
 	public void debug(String message, Object...args) {
-		logger.info(indentString + message, args);
+		logger.debug(indentString + message, args);
 	}
 	
 }
