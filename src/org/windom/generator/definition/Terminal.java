@@ -1,11 +1,19 @@
 package org.windom.generator.definition;
 
-public class Terminal extends Node {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Terminal implements Node {
 
 	private final String text;
 
 	public Terminal(String text) {
 		this.text = text;
+	}
+	
+	@Override
+	public List<Node> getChildren() {
+		return new ArrayList<Node>(0);
 	}
 	
 	@Override

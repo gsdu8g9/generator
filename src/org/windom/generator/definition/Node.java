@@ -1,5 +1,7 @@
 package org.windom.generator.definition;
 
-public class Node {	
+import org.windom.util.traversal.TreeNode;
+
+public interface Node extends TreeNode<Node> {	
 	
 }
