@@ -7,14 +7,14 @@ import org.windom.util.traversal.Traversal;
 
 public class Definition {
 
-	private final Nonterminal start;	
+	private final Node start;	
 	private Map<String,Nonterminal> nodeMap = null;
 	
-	public Definition(Nonterminal start) {
+	public Definition(Node start) {
 		this.start = start;
 	}
 
-	public Nonterminal getStart() {
+	public Node getStart() {
 		return start;
 	}
 	
