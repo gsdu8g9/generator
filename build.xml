@@ -5,10 +5,11 @@
     	<mkdir dir="dist" />
         <jar destfile="dist/generator.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="test.Main"/>
-                <attribute name="Class-Path" value="."/>
+                <attribute name="Main-Class" value="org.windom.test.Main"/>
+                <attribute name="Class-Path" value=". slf4j-api-1.6.5.jar logback-core-1.0.6.jar logback-classic-1.0.6.jar"/>
             </manifest>
             <fileset dir="bin"/>
+        	<zipgroupfileset dir="lib" includes="*.jar"/>
         </jar>
     </target>
 	
