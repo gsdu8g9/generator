@@ -1,3 +1,11 @@
-a -> b c;
-b -> 'Feri' | 'Geza';
-c -> 'megy' | 'eszik';
+
+s -> baratok leiras;
+
+szereplok -> 'Geza' | 'Feri' | 'Pisti' | 'Jozsi';
+szereplo1 -> szereplok;
+szereplo2 -> szereplok;
+
+baratok -> $szereplo1 'es' $szereplo2 'baratok' '.';
+leiras -> $szereplo1 'szeret' mit_szeret 'mig' $szereplo2 'szeret' mit_szeret '.';
+
+mit_szeret -> 'focizni' | 'biciklizni' | 'aludni' | 'enni' | 'inni' | 'pingpongozni';

@@ -3,6 +3,8 @@ package org.windom.generator.input.plain.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.windom.generator.definition.AnnotatedNonterminal;
+import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Terminal;
@@ -50,6 +52,10 @@ public class ParserImpl extends ParserBase implements Parser {
 		return right;
 	}
 	
+	private Node annotatedNonterminal(Annotation annotation) throws InputException {
+		return new AnnotatedNonterminal(annotation, nonterminal());
+	}
+	
 	private Nonterminal nonterminal() throws InputException {
 		Identifier identifier = (Identifier) match(Tag.IDENTIFIER);
 		return new Nonterminal(identifier.getLexeme());
@@ -64,6 +70,9 @@ public class ParserImpl extends ParserBase implements Parser {
 			match('(');
 			node = builder.buildNode(null, rightSides());
 			match(')');
+		} else if (matches('$')) {
+			match('$');
+			node = annotatedNonterminal(Annotation.PERM);
 		} else {
 			node = nonterminal();
 		}

@@ -12,7 +12,7 @@ public class Nonterminal implements Node {
 		this.name = name;
 		this.rules = new ArrayList<Rule>();
 	}
-
+	
 	@Override
 	public List<Node> getChildren() {
 		List<Node> children = new ArrayList<Node>();
@@ -22,6 +22,11 @@ public class Nonterminal implements Node {
 			}
 		}
 		return children;
+	}
+
+	@Override
+	public Nonterminal nonterminal() {
+		return this;
 	}
 	
 	@Override

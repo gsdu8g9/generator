@@ -12,13 +12,13 @@ public class Mapper implements Visitor<Node>, Evaluator<Node> {
 	
 	@Override
 	public boolean prune(Node node) {
-		return !(node instanceof Nonterminal) ||
-			nodeMap.containsKey(((Nonterminal)node).getName());
+		return node.nonterminal() == null ||
+				nodeMap.containsKey(node.nonterminal().getName());
 	}
 	
 	@Override
 	public void visit(Node node) {
-		Nonterminal nonterminal = (Nonterminal) node;
+		Nonterminal nonterminal = node.nonterminal();
 		nodeMap.put(nonterminal.getName(), nonterminal);		
 	}
 	

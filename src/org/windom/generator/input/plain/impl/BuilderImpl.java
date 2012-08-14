@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.windom.generator.definition.AnnotatedNonterminal;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
@@ -19,10 +20,11 @@ public class BuilderImpl implements Builder {
 	
 	private static final Logger log = LoggerFactory.getLogger(BuilderImpl.class);
 	
-	private final Map <String,Nonterminal> nodeMap = new HashMap<String,Nonterminal>();
+	private final Map<String,Nonterminal> nodeMap = new HashMap<String,Nonterminal>();
+	private final Map<String,AnnotatedNonterminal> annotatedNodeMap = new HashMap<String,AnnotatedNonterminal>();
 	private Nonterminal start = null;
 	
-	private static final String PHANTOM_NODE_MASK = "$%d";
+	private static final String PHANTOM_NODE_MASK = "#%d";
 	private int phantomNodeCount = 0;
 	
 	@Override
@@ -58,14 +60,27 @@ public class BuilderImpl implements Builder {
 	private Node resolveNode(Node node) {
 		if (node instanceof Nonterminal) {
 			return resolveNonterminal((Nonterminal) node);
-		} else {
+		} else if (node instanceof AnnotatedNonterminal) {
+			return resolveAnnotatedNonterminal((AnnotatedNonterminal) node);
+		} else {	
 			return node;
 		}
 	}
 	
+	private AnnotatedNonterminal resolveAnnotatedNonterminal(AnnotatedNonterminal node) {
+		String name = node.getNonterminal().getName();
+		if (annotatedNodeMap.containsKey(name)) {
+			node = annotatedNodeMap.get(name);
+		} else {
+			node.setNonterminal(resolveNonterminal(node.getNonterminal()));
+			annotatedNodeMap.put(name, node);
+		}
+		return node;
+	}
+	
 	private Nonterminal resolveNonterminal(Nonterminal node) {
 		if (node == null) {
-			node = makePhantomNode();	
+			node = makePhantomNode();
 		} else if (nodeMap.containsKey(node.getName())) {
 			node = nodeMap.get(node.getName());
 		}

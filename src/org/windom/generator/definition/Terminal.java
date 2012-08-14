@@ -15,6 +15,11 @@ public class Terminal implements Node {
 	public List<Node> getChildren() {
 		return new ArrayList<Node>(0);
 	}
+
+	@Override
+	public Nonterminal nonterminal() {
+		return null;
+	}
 	
 	@Override
 	public String toString() {

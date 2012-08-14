@@ -9,7 +9,7 @@ public class Rule {
 
 	public Rule (Nonterminal left, List<Node> right) {
 		this.left = left;
-		this.right = right;		
+		this.right = right;
 	}
 	
 	@Override
