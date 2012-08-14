@@ -13,8 +13,8 @@ public class TreeInstance {
 		this.startInstance = startInstance;
 	}
 
-	public List<Node> getLimit() {
-		Limiter limiter = new Limiter();
+	public List<Node> getLimit(boolean onlyTerminals) {
+		Limiter limiter = new Limiter(onlyTerminals);
 		Traversal.depthFirst(startInstance, limiter, limiter);
 		return limiter.getLimit();
 	}

@@ -11,7 +11,7 @@ public class PostProcessorImpl implements PostProcessor {
 	public String process(TreeInstance treeInstance) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for (Node node : treeInstance.getLimit()) {
+		for (Node node : treeInstance.getLimit(true)) {
 			if (first) {
 				first = false;
 			} else {

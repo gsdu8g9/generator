@@ -4,16 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.windom.generator.definition.Node;
+import org.windom.generator.definition.Terminal;
 import org.windom.util.traversal.Evaluator;
 import org.windom.util.traversal.Visitor;
 
 public class Limiter implements Visitor<NodeInstance>, Evaluator<NodeInstance> {
 
 	private final List<Node> limit = new ArrayList<Node>();
+	private final boolean onlyTerminals;
+	
+	public Limiter(boolean onlyTerminals) {
+		this.onlyTerminals = onlyTerminals;
+	}
 	
 	@Override
 	public boolean prune(NodeInstance nodeInstance) {
-		return false;
+		return nodeInstance.isOnLimit() && 
+				onlyTerminals && 
+				!(nodeInstance.getNode() instanceof Terminal);
 	}
 	
 	@Override
