@@ -53,6 +53,7 @@ public class ParserImpl extends ParserBase implements Parser {
 	}
 	
 	private Node annotatedNonterminal(Annotation annotation) throws InputException {
+		match(annotation.getMark());
 		return new AnnotatedNonterminal(annotation, nonterminal());
 	}
 	
@@ -62,7 +63,7 @@ public class ParserImpl extends ParserBase implements Parser {
 	}
 	
 	private Node node() throws InputException {
-		Node node;
+		Node node = null;
 		if (matches(Tag.LITERAL)) {
 			Literal literal = (Literal) match(Tag.LITERAL);
 			node = new Terminal(literal.getText());
@@ -70,11 +71,16 @@ public class ParserImpl extends ParserBase implements Parser {
 			match('(');
 			node = builder.buildNode(null, rightSides());
 			match(')');
-		} else if (matches('$')) {
-			match('$');
-			node = annotatedNonterminal(Annotation.PERM);
 		} else {
-			node = nonterminal();
+			for (Annotation annotation : Annotation.values()) {
+				if (matches(annotation.getMark())) {
+					node = annotatedNonterminal(annotation);
+					break;
+				}
+			}
+			if (node == null) {
+				node = nonterminal();
+			}
 		}
 		return node;
 	}

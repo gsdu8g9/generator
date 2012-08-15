@@ -1,5 +1,6 @@
 package org.windom.generator.definition;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Rule {
@@ -10,6 +11,10 @@ public class Rule {
 	public Rule (Nonterminal left, List<Node> right) {
 		this.left = left;
 		this.right = right;
+	}
+	
+	public Rule(Nonterminal left) {
+		this(left, new ArrayList<Node>(0));
 	}
 	
 	@Override

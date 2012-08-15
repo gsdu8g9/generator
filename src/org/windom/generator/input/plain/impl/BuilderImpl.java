@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.windom.generator.definition.AnnotatedNonterminal;
+import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
@@ -29,6 +30,7 @@ public class BuilderImpl implements Builder {
 	
 	@Override
 	public Definition build() throws InputException {
+		completeTags();
 		Definition definition = new Definition(start);
 		checkDefinition(definition);
 		return definition;
@@ -68,7 +70,7 @@ public class BuilderImpl implements Builder {
 	}
 	
 	private AnnotatedNonterminal resolveAnnotatedNonterminal(AnnotatedNonterminal node) {
-		String name = node.getNonterminal().getName();
+		String name = node.getName();
 		if (annotatedNodeMap.containsKey(name)) {
 			node = annotatedNodeMap.get(name);
 		} else {
@@ -93,6 +95,18 @@ public class BuilderImpl implements Builder {
 				phantomNodeCount++));
 	}
 
+	private void completeTags() {
+		for (Nonterminal node : nodeMap.values()) {
+			if (node.getRules().isEmpty() && (
+				annotatedNodeMap.containsKey(AnnotatedNonterminal.getName(Annotation.ADD_TAG, node)) ||
+				annotatedNodeMap.containsKey(AnnotatedNonterminal.getName(Annotation.DEL_TAG, node)) ||
+				annotatedNodeMap.containsKey(AnnotatedNonterminal.getName(Annotation.CHECK_TAG, node))
+					)) {
+				node.getRules().add(new Rule(node));
+			}
+		}
+	}
+	
 	private void checkDefinition(Definition definition) throws InputException {
 		Collection<Nonterminal> accessibleNodes = definition.nodes();
 		//
@@ -107,7 +121,7 @@ public class BuilderImpl implements Builder {
 		// Check completeness
 		//
 		for (Nonterminal node : accessibleNodes) {
-			if (node.getRules().size() == 0) {
+			if (node.getRules().isEmpty()) {
 				throw new InputException("Incomplete node: " + node);
 			}
 		}

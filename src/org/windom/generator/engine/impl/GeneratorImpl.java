@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.windom.generator.definition.AnnotatedNonterminal;
-import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
@@ -15,9 +14,12 @@ import org.windom.generator.engine.Generator;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.RuleInstance;
 import org.windom.generator.engine.TreeInstance;
+import org.windom.util.IndentedLogger;
 
 public class GeneratorImpl implements Generator {
 
+	private static final IndentedLogger log = new IndentedLogger(GeneratorImpl.class, "..");
+	
 	protected final Definition definition;
 	protected final Random rng;
 	
@@ -39,27 +41,51 @@ public class GeneratorImpl implements Generator {
 	
 	private NodeInstance generate(Node node, GeneratorContext ctx) {
 		if (node instanceof Terminal) {
-			return new NodeInstance(node, null);
+			return new NodeInstance(node);
 		} if (node instanceof AnnotatedNonterminal) {
 			AnnotatedNonterminal anode = (AnnotatedNonterminal) node;
-			if (anode.getAnnotation() == Annotation.PERM) {
+			switch (anode.getAnnotation()) {
+			case PERM: {
 				NodeInstance nodeInstance = ctx.getPermNodeInstance(anode);
 				if (nodeInstance == null) {
+					log.debug("{} is not bound", anode);
 					nodeInstance = generate(anode.getNonterminal(), ctx);
-					ctx.setPermNodeInstance(anode, nodeInstance);
+					ctx.setPermNodeInstance(anode, nodeInstance);					
+				} else {
+					log.debug("{} is already bound", anode);
 				}
 				return nodeInstance;
-			} else {
+			} 
+			case ADD_TAG: { 
+				ctx.addTag(anode.getNonterminal().getName());
+				log.debug("{} applied", anode);
+				return new NodeInstance(anode);
+			}
+			case DEL_TAG: {
+				ctx.delTag(anode.getNonterminal().getName());
+				log.debug("{} applied", anode);
+				return new NodeInstance(anode);
+			}
+			default:
 				throw new RuntimeException("Unsupported node annotation: " + anode.getAnnotation());
 			}
 		} else if (node instanceof Nonterminal) {
-			List<Rule> rules = getApplicableRules((Nonterminal) node);
-			Rule rule = chooseRule(rules);
-			RuleInstance ruleInstance = new RuleInstance(rule);
-			for (Node rightNode : rule.getRight()) {
-				ruleInstance.getNodeInstances().add(generate(rightNode, ctx));
+			log.debug("begin-generate {}", node);
+			log.indent();
+			try {
+				List<Rule> rules = getApplicableRules((Nonterminal) node);
+				Rule rule = chooseRule(rules);
+				RuleInstance ruleInstance = new RuleInstance(rule);
+				GeneratorContext branchCtx = ctx.branch();
+				for (Node rightNode : rule.getRight()) {
+					ruleInstance.getNodeInstances().add(generate(rightNode, branchCtx));
+				}
+				ctx.merge(branchCtx);
+				return new NodeInstance(node, ruleInstance);
+			} finally {
+				log.unindent();
+				log.debug("end-generate {}", node);
 			}
-			return new NodeInstance(node, ruleInstance);
 		} else {
 			throw new RuntimeException("Unsupported node type: " + node.getClass());
 		}
@@ -72,6 +98,7 @@ public class GeneratorImpl implements Generator {
 				applicableRules.add(rule);
 			}
 		}
+		log.debug("applicable-rules: {}", applicableRules);
 		return applicableRules;
 	}
 	
@@ -80,7 +107,9 @@ public class GeneratorImpl implements Generator {
 	}
 	
 	private Rule chooseRule(List<Rule> rules) {
-		return rules.get(rng.nextInt(rules.size()));
+		Rule rule = rules.get(rng.nextInt(rules.size()));
+		log.debug("chosen-rule: {}", rule);
+		return rule;
 	}
 	
 }

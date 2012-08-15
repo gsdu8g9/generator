@@ -16,6 +16,10 @@ public class NodeInstance implements TreeNode<NodeInstance> {
 		this.ruleInstance = ruleInstance;
 	}
 	
+	public NodeInstance(Node node) {
+		this(node, null);
+	}
+	
 	@Override
 	public List<NodeInstance> getChildren() {
 		if (!isOnLimit()) {

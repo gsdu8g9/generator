@@ -1,7 +1,7 @@
 
 s -> baratok leiras;
 
-szereplok -> 'Geza' | 'Feri' | 'Pisti' | 'Jozsi';
+szereplok -> 'Geza' +gz | 'Feri' +fr | 'Pisti' | 'Jozsi';
 szereplo1 -> szereplok;
 szereplo2 -> szereplok;
 

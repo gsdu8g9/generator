@@ -13,6 +13,14 @@ public class AnnotatedNonterminal implements Node {
 		this.nonterminal = nonterminal;
 	}
 
+	public String getName() {
+		return getName(annotation, nonterminal); 
+	}
+
+	public static String getName(Annotation annotation, Nonterminal nonterminal) {
+		return Character.toString(annotation.getMark()) + nonterminal;
+	}
+	
 	@Override
 	public List<Node> getChildren() {
 		return nonterminal.getChildren();
@@ -25,7 +33,7 @@ public class AnnotatedNonterminal implements Node {
 	
 	@Override
 	public String toString() {
-		return annotation.getMark() + nonterminal;
+		return getName();
 	}
 
 	@Override

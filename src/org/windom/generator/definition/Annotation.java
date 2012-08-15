@@ -2,15 +2,18 @@ package org.windom.generator.definition;
 
 public enum Annotation {
 
-	PERM("$");
+	PERM('$'),
+	ADD_TAG('+'),
+	DEL_TAG('-'),
+	CHECK_TAG('@');
 	
-	private final String mark;
+	private final char mark;
 	
-	private Annotation(String mark) {
+	private Annotation(char mark) {
 		this.mark = mark;
 	}
 	
-	public String getMark() {
+	public char getMark() {
 		return mark;
 	}
 	
