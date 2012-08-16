@@ -1,3 +1,3 @@
 s -> alma korte;
-alma -> 'alma';
-korte -> 'korte';
+alma -> 'Macska' | +kutya 'Kutya';
+korte -> @kutya 'harap' | 'nyavog' @macska;

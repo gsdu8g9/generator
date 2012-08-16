@@ -36,9 +36,13 @@ public class GeneratorImpl implements Generator {
 	
 	@Override
 	public TreeInstance generate() throws GeneratorException {
+		GeneratorContext ctx = new GeneratorContext();
 		NodeInstance startInstance = generate(
-			definition.getStart(),
-			new GeneratorContext());
+				definition.getStart(),
+				ctx);
+		log.info("succeeded rules: {} failed rules: {}", 
+				ctx.getStats().getSucceededRules(),
+				ctx.getStats().getFailedRules());
 		if (startInstance == null) {
 			throw new GeneratorException("This generator won't generate anything");
 		}
@@ -62,12 +66,15 @@ public class GeneratorImpl implements Generator {
 					NodeInstance nodeInstance = generate(rule, branchCtx);
 					log.unindent();
 					if (nodeInstance != null) {
-						ctx.merge(branchCtx);
+						ctx.getStats().succeededRule();
+						ctx.merge(branchCtx, true);
 						generate(
 							new AnnotatedNonterminal(Annotation.ADD_TAG, node.nonterminal()),
 							ctx);
 						return nodeInstance;
 					} else {
+						ctx.getStats().failedRule();
+						ctx.merge(branchCtx, false);
 						rules.remove(rule);
 					}
 				}

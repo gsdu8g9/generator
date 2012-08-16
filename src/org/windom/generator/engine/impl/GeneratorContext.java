@@ -12,7 +12,8 @@ public class GeneratorContext {
 	
 	private Map<String,NodeInstance> permNodes = new HashMap<String,NodeInstance>();
 	private Set<String> tags = new HashSet<String>();
-
+	private GeneratorStats stats = new GeneratorStats();
+	
 	public GeneratorContext branch() {
 		GeneratorContext branch = new GeneratorContext();
 		branch.permNodes.putAll(permNodes);
@@ -20,9 +21,14 @@ public class GeneratorContext {
 		return branch;
 	}
 	
-	public void merge(GeneratorContext branch) {
-		permNodes.putAll(branch.permNodes);
-		tags.addAll(branch.tags);
+	public void merge(GeneratorContext branch, boolean success) {
+		if (success) {
+			permNodes.putAll(branch.permNodes);
+			tags.addAll(branch.tags);
+			stats.succeeded(branch.stats);
+		} else {
+			stats.failed(branch.stats);
+		}
 	}
 	
 	public NodeInstance getPermNodeInstance(AnnotatedNonterminal node) {
@@ -43,6 +49,10 @@ public class GeneratorContext {
 	
 	public boolean checkTag(String tag) {
 		return tags.contains(tag);
+	}
+
+	public GeneratorStats getStats() {
+		return stats;
 	}
 	
 }
