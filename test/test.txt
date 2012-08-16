@@ -1,11 +1,3 @@
-
-s -> baratok leiras;
-
-szereplok -> 'Geza' +gz | 'Feri' +fr | 'Pisti' | 'Jozsi';
-szereplo1 -> szereplok;
-szereplo2 -> szereplok;
-
-baratok -> $szereplo1 'es' $szereplo2 'baratok' '.';
-leiras -> $szereplo1 'szeret' mit_szeret 'mig' $szereplo2 'szeret' mit_szeret '.';
-
-mit_szeret -> 'focizni' | 'biciklizni' | 'aludni' | 'enni' | 'inni' | 'pingpongozni';
+s -> alma korte;
+alma -> 'alma';
+korte -> 'korte';
