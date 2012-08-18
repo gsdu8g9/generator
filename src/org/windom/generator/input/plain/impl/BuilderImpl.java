@@ -8,12 +8,13 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.windom.generator.definition.AnnotatedNonterminal;
+import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Rule;
+import org.windom.generator.definition.Symbol;
 import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Builder;
 
@@ -21,15 +22,16 @@ public class BuilderImpl implements Builder {
 	
 	private static final Logger log = LoggerFactory.getLogger(BuilderImpl.class);
 	
-	private final Map<String,Nonterminal> nodeMap = new HashMap<String,Nonterminal>();
-	private final Map<String,AnnotatedNonterminal> annotatedNodeMap = new HashMap<String,AnnotatedNonterminal>();
+	private final Map<String,Symbol> symbolMap = new HashMap<String,Symbol>();
+	private final Map<String,Annotated> annotatedMap = new HashMap<String,Annotated>();
 	private Nonterminal start = null;
 	
-	private static final String PHANTOM_NODE_MASK = "#%d";
-	private int phantomNodeCount = 0;
+	private static final String PHANTOM_SYMBOL_MASK = "#%d";
+	private int phantomSymbolCount = 0;
 	
 	@Override
 	public Definition build() throws InputException {
+		if (start == null) throw new InputException("No symbols defined");
 		completeTags();
 		Definition definition = new Definition(start);
 		checkDefinition(definition);
@@ -37,8 +39,8 @@ public class BuilderImpl implements Builder {
 	}
 	
 	@Override
-	public Node buildNode(Nonterminal left, List<List<Node>> rights) {
-		Nonterminal node = resolveNonterminal(left);
+	public Symbol buildSymbol(Symbol left, List<List<Node>> rights) {
+		Symbol symbol = resolveSymbol(left);
 		if (rights.size() == 0) {
 			rights.add(new ArrayList<Node>());
 		}
@@ -46,83 +48,88 @@ public class BuilderImpl implements Builder {
 			for (int i=0; i<right.size(); i++) {
 				right.set(i,resolveNode(right.get(i)));
 			}
-			Rule rule = new Rule(node, right);
-			if (!node.getRules().contains(rule)) {
-				node.getRules().add(rule);
+			Rule rule = new Rule(symbol, right);
+			if (!symbol.getRules().contains(rule)) {
+				symbol.getRules().add(rule);
 			} else {
 				log.warn("Ignoring duplicate rule: {}",rule);
 			}
 		}
 		if (start == null && left != null) {
-			start = node;
+			start = symbol;
 		}
-		return node;
+		return symbol;
 	}
 	
 	private Node resolveNode(Node node) {
 		if (node instanceof Nonterminal) {
 			return resolveNonterminal((Nonterminal) node);
-		} else if (node instanceof AnnotatedNonterminal) {
-			return resolveAnnotatedNonterminal((AnnotatedNonterminal) node);
-		} else {	
+		} else {
 			return node;
 		}
 	}
 	
-	private AnnotatedNonterminal resolveAnnotatedNonterminal(AnnotatedNonterminal node) {
-		String name = node.getName();
-		if (annotatedNodeMap.containsKey(name)) {
-			node = annotatedNodeMap.get(name);
+	private Nonterminal resolveNonterminal(Nonterminal nonterminal) {
+		if (nonterminal instanceof Annotated) {
+			return resolveAnnotated((Annotated) nonterminal);
 		} else {
-			node.setNonterminal(resolveNonterminal(node.getNonterminal()));
-			annotatedNodeMap.put(name, node);
+			return resolveSymbol((Symbol) nonterminal);
 		}
-		return node;
 	}
 	
-	private Nonterminal resolveNonterminal(Nonterminal node) {
-		if (node == null) {
-			node = makePhantomNode();
-		} else if (nodeMap.containsKey(node.getName())) {
-			node = nodeMap.get(node.getName());
+	private Annotated resolveAnnotated(Annotated annotated) {
+		String name = annotated.getName();
+		if (annotatedMap.containsKey(name)) {
+			annotated = annotatedMap.get(name);
+		} else {
+			annotated.setNonterminal(resolveNonterminal(annotated.getNonterminal()));
+			annotatedMap.put(name, annotated);
 		}
-		nodeMap.put(node.getName(),node);
-		return node;
+		return annotated;
+	}
+
+	private Symbol resolveSymbol(Symbol symbol) {
+		if (symbol == null) {
+			symbol = makePhantomSymbol();
+		} else if (symbolMap.containsKey(symbol.getName())) {
+			symbol = symbolMap.get(symbol.getName());
+		}
+		symbolMap.put(symbol.getName(),symbol);
+		return symbol;
 	}
 	
-	private Nonterminal makePhantomNode() {
-		return new Nonterminal(String.format(PHANTOM_NODE_MASK,
-				phantomNodeCount++));
+	private Symbol makePhantomSymbol() {
+		return new Symbol(String.format(PHANTOM_SYMBOL_MASK, phantomSymbolCount++));
 	}
 
 	private void completeTags() {
-		for (Nonterminal node : nodeMap.values()) {
-			if (node.getRules().isEmpty() && (
-				annotatedNodeMap.containsKey(AnnotatedNonterminal.getName(Annotation.ADD_TAG, node)) ||
-				annotatedNodeMap.containsKey(AnnotatedNonterminal.getName(Annotation.DEL_TAG, node)) ||
-				annotatedNodeMap.containsKey(AnnotatedNonterminal.getName(Annotation.CHECK_TAG, node))
+		for (Symbol symbol : symbolMap.values()) {
+			if (symbol.getRules().isEmpty() && (
+				annotatedMap.containsKey(Annotated.getName(Annotation.ADD_TAG, symbol)) ||
+				annotatedMap.containsKey(Annotated.getName(Annotation.DEL_TAG, symbol)) ||
+				annotatedMap.containsKey(Annotated.getName(Annotation.CHECK_TAG, symbol))
 					)) {
-				node.getRules().add(new Rule(node));
+				symbol.getRules().add(new Rule(symbol));
 			}
 		}
 	}
 	
 	private void checkDefinition(Definition definition) throws InputException {
-		Collection<Nonterminal> accessibleNodes = definition.nodes();
+		Collection<Symbol> accessibleSymbols = definition.symbols();
 		//
 		// Check accessibility
 		//
-		for (Nonterminal node : nodeMap.values()) {
-			if (!accessibleNodes.contains(node)) {
-				log.warn("Unreachable node: {}",node);
+		for (Symbol symbol : symbolMap.values()) {
+			if (!accessibleSymbols.contains(symbol)) {
+				log.warn("Unreachable symbol: {}", symbol);
 			}
 		}
 		//
 		// Check completeness
 		//
-		for (Nonterminal node : accessibleNodes) {
-			if (node.getRules().isEmpty()) {
-				throw new InputException("Incomplete node: " + node);
+		for (Symbol symbol : accessibleSymbols) {
+			if (symbol.getRules().isEmpty()) {
+				throw new InputException("Incomplete symbol: " + symbol);
 			}
 		}
 		//

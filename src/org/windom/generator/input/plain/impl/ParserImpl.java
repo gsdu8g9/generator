@@ -3,10 +3,10 @@ package org.windom.generator.input.plain.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.windom.generator.definition.AnnotatedNonterminal;
+import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Node;
-import org.windom.generator.definition.Nonterminal;
+import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
 import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Builder;
@@ -26,9 +26,9 @@ public class ParserImpl extends ParserBase implements Parser {
 	}
 	
 	private void rule() throws InputException {
-		Nonterminal left = nonterminal();
+		Symbol left = symbol();
 		match(Tag.EXPAND);
-		builder.buildNode(left, rightSides());
+		builder.buildSymbol(left, rightSides());
 		match(';');
 	}
 	
@@ -52,14 +52,14 @@ public class ParserImpl extends ParserBase implements Parser {
 		return right;
 	}
 	
-	private Node annotatedNonterminal(Annotation annotation) throws InputException {
+	private Annotated annotated(Annotation annotation) throws InputException {
 		match(annotation.getMark());
-		return new AnnotatedNonterminal(annotation, nonterminal());
+		return new Annotated(annotation, symbol());
 	}
 	
-	private Nonterminal nonterminal() throws InputException {
+	private Symbol symbol() throws InputException {
 		Identifier identifier = (Identifier) match(Tag.IDENTIFIER);
-		return new Nonterminal(identifier.getLexeme());
+		return new Symbol(identifier.getLexeme());
 	}
 	
 	private Node node() throws InputException {
@@ -69,17 +69,17 @@ public class ParserImpl extends ParserBase implements Parser {
 			node = new Terminal(literal.getText());
 		} else if (matches('(')) {
 			match('(');
-			node = builder.buildNode(null, rightSides());
+			node = builder.buildSymbol(null, rightSides());
 			match(')');
 		} else {
 			for (Annotation annotation : Annotation.ON_NONTERMINAL) {
 				if (matches(annotation.getMark())) {
-					node = annotatedNonterminal(annotation);
+					node = annotated(annotation);
 					break;
 				}
 			}
 			if (node == null) {
-				node = nonterminal();
+				node = symbol();
 			}
 		}
 		return node;

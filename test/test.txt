@@ -1,3 +1,11 @@
 s -> alma korte;
 alma -> 'Macska' | +kutya 'Kutya';
 korte -> @kutya 'harap' | 'nyavog' @macska;
+
+#s -> baratok '.' cucc;
+#baratok -> $szereplo1 'es' $szereplo2 'baratok';
+#szereplo1 -> nev;
+#szereplo2 -> nev;
+#nev -> 'Feri' | 'Geza' | 'Pisti' | 'Lajos' | 'Marha';
+#micsinal -> 'eszik' | 'iszik' | 'jatszik' | 'alszik';
+#cucc -> $szereplo1 micsinal ',' $szereplo2 $micsinal 'mondom' $szereplo2 $micsinal 'nem pedig' micsinal;

@@ -2,12 +2,12 @@ package org.windom.generator.definition;
 
 import java.util.List;
 
-public class AnnotatedNonterminal implements Node {
+public class Annotated extends Nonterminal {
 
 	private final Annotation annotation;
 	private Nonterminal nonterminal;
 	
-	public AnnotatedNonterminal(Annotation annotation, Nonterminal nonterminal) {
+	public Annotated(Annotation annotation, Nonterminal nonterminal) {
 		this.annotation = annotation;
 		this.nonterminal = nonterminal;
 	}
@@ -26,8 +26,8 @@ public class AnnotatedNonterminal implements Node {
 	}
 
 	@Override
-	public Nonterminal nonterminal() {
-		return nonterminal;
+	public Symbol symbol() {
+		return nonterminal.symbol();
 	}
 	
 	@Override
@@ -54,7 +54,7 @@ public class AnnotatedNonterminal implements Node {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AnnotatedNonterminal other = (AnnotatedNonterminal) obj;
+		Annotated other = (Annotated) obj;
 		if (annotation != other.annotation)
 			return false;
 		if (nonterminal == null) {

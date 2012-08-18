@@ -5,15 +5,15 @@ import java.util.List;
 
 public class Rule {
 
-	private final Nonterminal left;
+	private final Symbol left;
 	private final List<Node> right;
 
-	public Rule (Nonterminal left, List<Node> right) {
+	public Rule (Symbol left, List<Node> right) {
 		this.left = left;
 		this.right = right;
 	}
 	
-	public Rule(Nonterminal left) {
+	public Rule(Symbol left) {
 		this(left, new ArrayList<Node>(0));
 	}
 	
@@ -60,7 +60,7 @@ public class Rule {
 		return true;
 	}
 
-	public Node getLeft() {
+	public Symbol getLeft() {
 		return left;
 	}
 	public List<Node> getRight() {

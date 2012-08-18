@@ -7,8 +7,8 @@ import org.windom.util.traversal.Traversal;
 
 public class Definition {
 
-	private final Node start;	
-	private Map<String,Nonterminal> nodeMap = null;
+	private final Node start;
+	private Map<String,Symbol> symbolMap = null;
 	
 	public Definition(Node start) {
 		this.start = start;
@@ -18,28 +18,28 @@ public class Definition {
 		return start;
 	}
 	
-	private Map<String,Nonterminal> getNodeMap() {
-		if (nodeMap == null) {
-			Mapper nodeMapper = new Mapper();
-			Traversal.breadthFirst(start, nodeMapper, nodeMapper);
-			nodeMap = nodeMapper.getNodeMap();
+	private Map<String,Symbol> getSymbolMap() {
+		if (symbolMap == null) {
+			SymbolMapper symbolMapper = new SymbolMapper();
+			Traversal.breadthFirst(start, symbolMapper, symbolMapper);
+			symbolMap = symbolMapper.getSymbolMap();
 		}
-		return nodeMap;
+		return symbolMap;
 	}
 	
-	public Collection<Nonterminal> nodes() {
-		return getNodeMap().values();
+	public Collection<Symbol> symbols() {
+		return getSymbolMap().values();
 	}
 	
-	public Nonterminal node(String name) {
-		return getNodeMap().get(name);
+	public Symbol node(String name) {
+		return getSymbolMap().get(name);
 	}
 	
 	public String dump() {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for (Nonterminal node : nodes()) {
-			for (Rule rule : node.getRules()) {
+		for (Symbol symbol : symbols()) {
+			for (Rule rule : symbol.getRules()) {
 				if (first) {
 					first = false;
 				} else {

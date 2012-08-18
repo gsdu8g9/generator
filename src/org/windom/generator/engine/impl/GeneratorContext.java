@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.windom.generator.definition.AnnotatedNonterminal;
+import org.windom.generator.definition.Annotated;
 import org.windom.generator.engine.NodeInstance;
 
 public class GeneratorContext {
@@ -31,12 +31,12 @@ public class GeneratorContext {
 		}
 	}
 	
-	public NodeInstance getPermNodeInstance(AnnotatedNonterminal node) {
-		return permNodes.get(node.getNonterminal().getName());
+	public NodeInstance getPermNodeInstance(Annotated node) {
+		return permNodes.get(node.symbol().getName());
 	}
 	
-	public void setPermNodeInstance(AnnotatedNonterminal node, NodeInstance nodeInstance) {
-		permNodes.put(node.getNonterminal().getName(), nodeInstance);
+	public void setPermNodeInstance(Annotated node, NodeInstance nodeInstance) {
+		permNodes.put(node.symbol().getName(), nodeInstance);
 	}
 	
 	public void addTag(String tag) {

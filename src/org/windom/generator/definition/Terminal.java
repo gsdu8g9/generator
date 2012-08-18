@@ -17,7 +17,7 @@ public class Terminal implements Node {
 	}
 
 	@Override
-	public Nonterminal nonterminal() {
+	public Symbol symbol() {
 		return null;
 	}
 	

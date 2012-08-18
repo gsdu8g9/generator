@@ -4,6 +4,6 @@ import org.windom.util.traversal.TreeNode;
 
 public interface Node extends TreeNode<Node> {
 
-	public Nonterminal nonterminal();
+	public Symbol symbol();
 	
 }

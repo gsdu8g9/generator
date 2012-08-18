@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.windom.generator.definition.AnnotatedNonterminal;
+import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
-import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Rule;
+import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
 import org.windom.generator.engine.Generator;
 import org.windom.generator.engine.GeneratorException;
@@ -52,13 +52,13 @@ public class GeneratorImpl implements Generator {
 	private NodeInstance generate(Node node, GeneratorContext ctx) {
 		if (node instanceof Terminal) {
 			return new NodeInstance(node);
-		} if (node instanceof AnnotatedNonterminal) {
-			return generate((AnnotatedNonterminal) node, ctx);
-		} else if (node instanceof Nonterminal) {
+		} if (node instanceof Annotated) {
+			return generate((Annotated) node, ctx);
+		} else if (node instanceof Symbol) {
 			log.debug("begin-generate {}", node);
 			log.indent();
 			try {
-				List<Rule> rules = new ArrayList<Rule>(node.nonterminal().getRules());
+				List<Rule> rules = new ArrayList<Rule>(node.symbol().getRules());
 				while (!rules.isEmpty()) {					
 					Rule rule = chooseRule(rules);
 					GeneratorContext branchCtx = ctx.branch();
@@ -69,7 +69,7 @@ public class GeneratorImpl implements Generator {
 						ctx.getStats().succeededRule();
 						ctx.merge(branchCtx, true);
 						generate(
-							new AnnotatedNonterminal(Annotation.ADD_TAG, node.nonterminal()),
+							new Annotated(Annotation.ADD_TAG, node.symbol()),
 							ctx);
 						return nodeInstance;
 					} else {
@@ -89,36 +89,36 @@ public class GeneratorImpl implements Generator {
 		}
 	}
 	
-	private NodeInstance generate(AnnotatedNonterminal anode, GeneratorContext ctx) {
-		switch (anode.getAnnotation()) {
+	private NodeInstance generate(Annotated annotated, GeneratorContext ctx) {
+		switch (annotated.getAnnotation()) {
 		case PERM: {
-			NodeInstance nodeInstance = ctx.getPermNodeInstance(anode);
+			NodeInstance nodeInstance = ctx.getPermNodeInstance(annotated);
 			if (nodeInstance == null) {
-				log.debug("{} is not bound", anode);
-				nodeInstance = generate(anode.getNonterminal(), ctx);
-				ctx.setPermNodeInstance(anode, nodeInstance);					
+				log.debug("{} is not bound", annotated);
+				nodeInstance = generate(annotated.getNonterminal(), ctx);
+				ctx.setPermNodeInstance(annotated, nodeInstance);					
 			} else {
-				log.debug("{} is already bound", anode);
+				log.debug("{} is already bound", annotated);
 			}
 			return nodeInstance;
 		} 
 		case ADD_TAG: { 
-			ctx.addTag(anode.getNonterminal().getName());
-			log.debug("{} applied", anode);
-			return new NodeInstance(anode);
+			ctx.addTag(annotated.symbol().getName());
+			log.debug("{} applied", annotated);
+			return new NodeInstance(annotated);
 		}
 		case DEL_TAG: {
-			ctx.delTag(anode.getNonterminal().getName());
-			log.debug("{} applied", anode);
-			return new NodeInstance(anode);
+			ctx.delTag(annotated.symbol().getName());
+			log.debug("{} applied", annotated);
+			return new NodeInstance(annotated);
 		}
 		case CHECK_TAG: {
-			boolean result = ctx.checkTag(anode.getNonterminal().getName());
-			log.debug("{} result: {}", anode, result);
-			return result ? new NodeInstance(anode) : null;
+			boolean result = ctx.checkTag(annotated.symbol().getName());
+			log.debug("{} result: {}", annotated, result);
+			return result ? new NodeInstance(annotated) : null;
 		}
 		default:
-			throw new RuntimeException("Unsupported node annotation: " + anode.getAnnotation());
+			throw new RuntimeException("Unsupported symbol annotation: " + annotated.getAnnotation());
 		}
 	}
 	
