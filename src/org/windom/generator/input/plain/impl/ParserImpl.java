@@ -72,7 +72,7 @@ public class ParserImpl extends ParserBase implements Parser {
 			node = builder.buildNode(null, rightSides());
 			match(')');
 		} else {
-			for (Annotation annotation : Annotation.values()) {
+			for (Annotation annotation : Annotation.ON_NONTERMINAL) {
 				if (matches(annotation.getMark())) {
 					node = annotatedNonterminal(annotation);
 					break;

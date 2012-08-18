@@ -1,4 +1,3 @@
-
 package org.windom.generator.definition;
 
 import java.util.List;

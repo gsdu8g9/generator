@@ -44,7 +44,7 @@ public class GeneratorImpl implements Generator {
 				ctx.getStats().getSucceededRules(),
 				ctx.getStats().getFailedRules());
 		if (startInstance == null) {
-			throw new GeneratorException("This generator won't generate anything");
+			throw new GeneratorException("Failed to generate anything");
 		}
 		return new TreeInstance(startInstance);
 	}
