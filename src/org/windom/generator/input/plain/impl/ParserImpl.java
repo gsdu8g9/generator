@@ -6,6 +6,7 @@ import java.util.List;
 import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Node;
+import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
 import org.windom.generator.input.InputException;
@@ -23,6 +24,13 @@ public class ParserImpl extends ParserBase implements Parser {
 	public ParserImpl(Scanner scanner, Builder builder) throws InputException {
 		super(scanner);
 		this.builder = builder;
+	}
+	
+	@Override
+	public void parse() throws InputException {
+		while (!matches(Tag.END)) {
+			rule();
+		}
 	}
 	
 	private void rule() throws InputException {
@@ -52,44 +60,51 @@ public class ParserImpl extends ParserBase implements Parser {
 		return right;
 	}
 	
-	private Annotated annotated(Annotation annotation) throws InputException {
-		match(annotation.getMark());
-		return new Annotated(annotation, symbol());
-	}
-	
-	private Symbol symbol() throws InputException {
-		Identifier identifier = (Identifier) match(Tag.IDENTIFIER);
-		return new Symbol(identifier.getLexeme());
-	}
-	
 	private Node node() throws InputException {
 		Node node = null;
 		if (matches(Tag.LITERAL)) {
 			Literal literal = (Literal) match(Tag.LITERAL);
 			node = new Terminal(literal.getText());
-		} else if (matches('(')) {
-			match('(');
-			node = builder.buildSymbol(null, rightSides());
-			match(')');
 		} else {
-			for (Annotation annotation : Annotation.ON_NONTERMINAL) {
-				if (matches(annotation.getMark())) {
-					node = annotated(annotation);
-					break;
-				}
-			}
-			if (node == null) {
-				node = symbol();
-			}
+			node = factor();
 		}
 		return node;
 	}
 	
-	@Override
-	public void parse() throws InputException {
-		while (!matches(Tag.END)) {
-			rule();
+	private Nonterminal factor() throws InputException {
+		for (Annotation annotation : Annotation.ON_NONTERMINAL) {
+			if (matches(annotation.getMark())) {
+				match(annotation.getMark());
+				return new Annotated(annotation, factor());
+			}
 		}
+		return nonterminal();
+	}
+	
+	private Nonterminal nonterminal() throws InputException {
+		Nonterminal nonterminal = null;
+		if (matches('(')) {
+			match('(');
+			nonterminal = builder.buildSymbol(null, rightSides());
+			match(')');
+		} else {
+			for (Annotation annotation : Annotation.ON_SYMBOL) {
+				if (matches(annotation.getMark())) {
+					match(annotation.getMark());
+					nonterminal = new Annotated(annotation, symbol());
+					break;
+				}
+			}
+			if (nonterminal == null) {
+				nonterminal = symbol();
+			}
+		}
+		return nonterminal;
+	}
+	
+	private Symbol symbol() throws InputException {
+		Identifier identifier = (Identifier) match(Tag.IDENTIFIER);
+		return new Symbol(identifier.getLexeme());
 	}
 	
 }

@@ -9,11 +9,11 @@ public enum Annotation {
 	SUCCEEDS  ('?'),
 	FAILS     ('!');
 	
-	public static final Annotation[] ON_NONTERMINAL = new Annotation[] {
+	public static final Annotation[] ON_SYMBOL = new Annotation[] {
 		PERM, ADD_TAG, DEL_TAG, CHECK_TAG
 	};
 	
-	public static final Annotation[] ON_RULE = new Annotation[] {
+	public static final Annotation[] ON_NONTERMINAL = new Annotation[] {
 		SUCCEEDS, FAILS
 	};
 	

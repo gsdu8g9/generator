@@ -1,6 +1,9 @@
-s -> alma korte;
-alma -> 'Macska' | +kutya 'Kutya';
-korte -> @kutya 'harap' | 'nyavog' @macska;
+s-> 'alma' ?@pista (!@pista | ?@pista);
+
+
+#s -> alma korte;
+#alma -> 'Macska' | +kutya 'Kutya';
+#korte -> @kutya 'harap' | 'nyavog' @macska;
 
 #s -> baratok '.' cucc;
 #baratok -> $szereplo1 'es' $szereplo2 'baratok';

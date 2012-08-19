@@ -19,16 +19,16 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			Definition d = new PlainInput("test.txt").read();
-			//System.out.println(d.dump());
-			Generator g = new GeneratorImpl(d);
-			PostProcessor p = new PostProcessorImpl();
-			TreeInstance ti = g.generate();
-			System.out.println(p.process(ti));
+			System.out.println(d.dump());
+//			Generator g = new GeneratorImpl(d);
+//			PostProcessor p = new PostProcessorImpl();
+//			TreeInstance ti = g.generate();
+//			System.out.println(p.process(ti));
 		} catch (InputException e) {
 			log.error("Error reading input", e);
-		} catch (GeneratorException e) {
+		} /*catch (GeneratorException e) {
 			log.error("Error generating", e);
-		}
+		} */
 	}
 	
 }
