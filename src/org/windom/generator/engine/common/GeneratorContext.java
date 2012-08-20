@@ -1,4 +1,4 @@
-package org.windom.generator.engine.impl;
+package org.windom.generator.engine.common;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package org.windom.generator.engine.impl;
+package org.windom.generator.engine.recursive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,45 +11,23 @@ import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
-import org.windom.generator.engine.Generator;
-import org.windom.generator.engine.GeneratorException;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.RuleInstance;
-import org.windom.generator.engine.TreeInstance;
-import org.windom.util.IndentedLogger;
+import org.windom.generator.engine.common.AbstractGenerator;
+import org.windom.generator.engine.common.GeneratorContext;
 
-public class GeneratorImpl implements Generator {
-
-	private static final IndentedLogger log = new IndentedLogger(GeneratorImpl.class, "  ");
+public class RecursiveGenerator extends AbstractGenerator {
 	
-	protected final Definition definition;
-	protected final Random rng;
-	
-	public GeneratorImpl(Definition definition, Random rng) {
-		this.definition = definition;
-		this.rng = rng;
+	public RecursiveGenerator(Definition definition, Random rng) {
+		super(definition, rng);
 	}
 	
-	public GeneratorImpl(Definition definition) {
-		this(definition, new Random());
+	public RecursiveGenerator(Definition definition) {
+		super(definition, new Random());
 	}
 	
 	@Override
-	public TreeInstance generate() throws GeneratorException {
-		GeneratorContext ctx = new GeneratorContext();
-		NodeInstance startInstance = generate(
-				definition.getStart(),
-				ctx);
-		log.info("succeeded rules: {} failed rules: {}", 
-				ctx.getStats().getSucceededRules(),
-				ctx.getStats().getFailedRules());
-		if (startInstance == null) {
-			throw new GeneratorException("Failed to generate anything");
-		}
-		return new TreeInstance(startInstance);
-	}
-	
-	private NodeInstance generate(Node node, GeneratorContext ctx) {
+	protected NodeInstance generate(Node node, GeneratorContext ctx) {
 		if (node instanceof Terminal) {
 			return new NodeInstance(node);
 		} if (node instanceof Annotated) {
@@ -101,7 +79,7 @@ public class GeneratorImpl implements Generator {
 				log.debug("{} is already bound", annotated);
 			}
 			return nodeInstance;
-		} 
+		}
 		case ADD_TAG: { 
 			ctx.addTag(annotated.symbol().getName());
 			log.debug("{} applied", annotated);
@@ -146,13 +124,6 @@ public class GeneratorImpl implements Generator {
 			}
 		}
 		return new NodeInstance(rule.getLeft(), ruleInstance);
-	}
-	
-	private Rule chooseRule(List<Rule> rules) {
-		log.debug("applicable-rules: {}", rules);
-		Rule rule = rules.get(rng.nextInt(rules.size()));
-		log.debug("chosen-rule: {}", rule);
-		return rule;
 	}
 	
 }
