@@ -22,9 +22,15 @@ public class GeneratorContext {
 	}
 	
 	public void merge(GeneratorContext branch, boolean success) {
+		mergeStats(branch, success);
 		if (success) {
 			permNodes.putAll(branch.permNodes);
 			tags.addAll(branch.tags);
+		}
+	}
+	
+	public void mergeStats(GeneratorContext branch, boolean success) {
+		if (success) {
 			stats.succeeded(branch.stats);
 		} else {
 			stats.failed(branch.stats);

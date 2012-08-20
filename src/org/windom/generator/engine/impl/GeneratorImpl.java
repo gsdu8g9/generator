@@ -117,6 +117,18 @@ public class GeneratorImpl implements Generator {
 			log.debug("{} result: {}", annotated, result);
 			return result ? new NodeInstance(annotated) : null;
 		}
+		case SUCCEEDS:
+		case FAILS: {
+			GeneratorContext branchCtx = ctx.branch();
+			log.debug("{} checking", annotated);
+			log.indent();
+			boolean result = (generate(annotated.getNonterminal(), branchCtx) != null);
+			log.unindent();
+			if (annotated.getAnnotation() == Annotation.FAILS) result = !result;
+			log.debug("{} result: {}", annotated, result);
+			ctx.mergeStats(branchCtx, true);
+			return result ? new NodeInstance(annotated) : null;
+		}
 		default:
 			throw new RuntimeException("Unsupported symbol annotation: " + annotated.getAnnotation());
 		}

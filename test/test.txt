@@ -1,4 +1,4 @@
-s-> 'alma' ?@pista (!@pista | ?@pista);
+s-> !((@valami)) 'alma';
 
 
 #s -> alma korte;
