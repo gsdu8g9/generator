@@ -156,7 +156,7 @@ public class BuilderImpl implements Builder {
 					}
 				}
 			}
-			log.info("{}", sb.toString().replaceAll("(\\r?\\n)", "$1\t## "));
+			log.info("{}", sb.toString().replaceAll("(\\r?\\n)", "$1##\t"));
 		} else if (META_INCLUDE.equals(metaOp)) {
 			for (Rule rule : symbol.getRules()) {
 				for (Node rightNode : rule.getRight()) {
