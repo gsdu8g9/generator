@@ -1,5 +1,9 @@
-s-> !((@valami)) 'alma';
+__echo -> '
+Ez egy teszt grammatika.
+Jo volt vele tokolni;
+';
 
+s-> !((@valami)) 'alma';
 
 #s -> alma korte;
 #alma -> 'Macska' | +kutya 'Kutya';

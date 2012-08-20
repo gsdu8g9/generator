@@ -15,6 +15,7 @@ import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
+import org.windom.generator.definition.Terminal;
 import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Builder;
 
@@ -29,6 +30,9 @@ public class BuilderImpl implements Builder {
 	private static final String PHANTOM_SYMBOL_MASK = "#%d";
 	private int phantomSymbolCount = 0;
 	
+	private static final String META_PREFIX = "__";
+	private static final String META_ECHO = "echo";
+	
 	@Override
 	public Definition build() throws InputException {
 		if (start == null) throw new InputException("No symbols defined");
@@ -39,21 +43,30 @@ public class BuilderImpl implements Builder {
 	}
 	
 	@Override
-	public Symbol buildSymbol(Symbol left, List<List<Node>> rights) {
+	public Symbol buildSymbol(Symbol left, List<List<Node>> rights) throws InputException {
 		Symbol symbol = resolveSymbol(left);
 		if (rights.size() == 0) {
 			rights.add(new ArrayList<Node>());
 		}
 		for (List<Node> right : rights) {
 			for (int i=0; i<right.size(); i++) {
-				right.set(i,resolveNode(right.get(i)));
+				Node rightNode = right.get(i);
+				if (isMetaNode(rightNode)) {
+					throw new InputException(
+						"Meta symbol found on right-side of a rule: " + rightNode);
+				}
+				right.set(i,resolveNode(rightNode));
 			}
 			Rule rule = new Rule(symbol, right);
-			if (!symbol.getRules().contains(rule)) {
+			if (!symbol.getRules().contains(rule) || isMetaNode(symbol)) {
 				symbol.getRules().add(rule);
 			} else {
 				log.warn("Ignoring duplicate rule: {}",rule);
 			}
+		}
+		if (isMetaNode(symbol)) {
+			handleMetaSymbol(symbol);
+			return null;
 		}
 		if (start == null && left != null) {
 			start = symbol;
@@ -90,18 +103,52 @@ public class BuilderImpl implements Builder {
 
 	private Symbol resolveSymbol(Symbol symbol) {
 		if (symbol == null) {
-			symbol = makePhantomSymbol();
+			return makePhantomSymbol();
+		} else if (isMetaNode(symbol)) {
+			return symbol;
 		} else if (symbolMap.containsKey(symbol.getName())) {
-			symbol = symbolMap.get(symbol.getName());
+			return symbolMap.get(symbol.getName());
+		} else {
+			symbolMap.put(symbol.getName(), symbol);
+			return symbol;
 		}
-		symbolMap.put(symbol.getName(),symbol);
-		return symbol;
 	}
 	
 	private Symbol makePhantomSymbol() {
 		return new Symbol(String.format(PHANTOM_SYMBOL_MASK, phantomSymbolCount++));
 	}
 
+	private boolean isMetaNode(Node node) {
+		return node.symbol() != null &&
+				node.symbol().getName().startsWith(META_PREFIX);
+	}
+	
+	private void handleMetaSymbol(Symbol symbol) {
+		String metaOp = symbol.getName().substring(META_PREFIX.length());
+		if (META_ECHO.equals(metaOp)) {
+			StringBuilder sb = new StringBuilder();
+			for (Rule rule : symbol.getRules()) {
+				sb.append('\n');
+				boolean firstNode = true;
+				for (Node rightNode : rule.getRight()) {
+					if (firstNode) {
+						firstNode = false;
+					} else {
+						sb.append(' ');
+					}
+					if (rightNode instanceof Terminal) {
+						sb.append(((Terminal) rightNode).getText());
+					} else {
+						sb.append(rightNode);
+					}
+				}
+			}
+			log.info("{}", sb.toString().replaceAll("(\\r?\\n)", "$1\t## "));
+		} else {
+			log.warn("Unrecognized meta symbol: {}", metaOp);
+		}
+	}
+	
 	private void completeTags() {
 		for (Symbol symbol : symbolMap.values()) {
 			if (symbol.getRules().isEmpty() && (

@@ -9,7 +9,7 @@ import org.windom.generator.input.InputException;
 
 public interface Builder {
 
-	public Symbol buildSymbol(Symbol left, List<List<Node>> rights);
+	public Symbol buildSymbol(Symbol left, List<List<Node>> rights) throws InputException;
 	public Definition build() throws InputException;
 	
 }
