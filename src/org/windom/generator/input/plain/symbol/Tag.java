@@ -4,6 +4,7 @@ public enum Tag {
 
 	IDENTIFIER,
 	LITERAL,
+	NUMERIC,
 	SIGIL,
 	END,
 

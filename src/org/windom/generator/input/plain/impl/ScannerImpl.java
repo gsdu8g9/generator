@@ -9,6 +9,7 @@ import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Scanner;
 import org.windom.generator.input.plain.symbol.Identifier;
 import org.windom.generator.input.plain.symbol.Literal;
+import org.windom.generator.input.plain.symbol.Numeric;
 import org.windom.generator.input.plain.symbol.Sigil;
 import org.windom.generator.input.plain.symbol.Tag;
 import org.windom.generator.input.plain.symbol.Token;
@@ -81,6 +82,24 @@ public class ScannerImpl implements Scanner {
 				return new Word(Tag.EXPAND,"->");
 			else
 				return new Sigil('-');
+		}
+
+		if (Character.isDigit(peek)) {
+			StringBuilder sb = new StringBuilder();
+			do {
+				sb.append((char)peek);
+				readChar();
+			} while (Character.isDigit(peek));
+			String numStr = sb.toString();
+			try {
+				return new Numeric(Integer.parseInt(numStr));
+			} catch (NumberFormatException e) {
+				throw new InputException(String.format(
+						"Invalid numeric value %s near line %d col %d",
+						numStr,
+						line, 
+						col));
+			}
 		}
 		
 		if (peek < 0) {
