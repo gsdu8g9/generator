@@ -25,18 +25,22 @@ public class PlainInput implements Input {
 	
 	@Override
 	public Definition read() throws InputException {
+		Builder builder = new BuilderImpl(filePath);
+		read(builder);
+		return builder.build();
+	}
+
+	public void read(Builder builder) throws InputException {
 		InputStream in = null;
 		try {
-			log.info("Reading definition from: {}", filePath);
+			log.info("Reading rules from: {}", filePath);
 			in = Utils.getClassPathResource(filePath);
 			if (in == null) {
 				throw new InputException("Resource not found: " + filePath);
 			}
 			Scanner scanner = new ScannerImpl(in);
-			Builder builder = new BuilderImpl();
 			Parser parser = new ParserImpl(scanner, builder);
 			parser.parse();
-			return builder.build();
 		} finally {
 			try {
 				if (in != null) {

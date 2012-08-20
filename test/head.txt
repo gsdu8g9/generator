@@ -1,0 +1,3 @@
+__echo -> 'ez a head';
+
+alma -> 'ez egy alma';

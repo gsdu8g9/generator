@@ -3,7 +3,9 @@ Ez egy teszt grammatika.
 Jo volt vele tokolni;
 ';
 
-s-> !((@valami)) 'alma';
+s-> !((@valami)) 'alma' alma;
+
+__include -> 'head.txt';
 
 #s -> alma korte;
 #alma -> 'Macska' | +kutya 'Kutya';

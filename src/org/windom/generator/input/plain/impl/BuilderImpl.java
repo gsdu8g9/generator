@@ -3,8 +3,10 @@ package org.windom.generator.input.plain.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
 import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Builder;
+import org.windom.generator.input.plain.PlainInput;
 
 public class BuilderImpl implements Builder {
 	
@@ -30,8 +33,18 @@ public class BuilderImpl implements Builder {
 	private static final String PHANTOM_SYMBOL_MASK = "#%d";
 	private int phantomSymbolCount = 0;
 	
-	private static final String META_PREFIX = "__";
-	private static final String META_ECHO = "echo";
+	private static final String 
+			META_PREFIX  = "__",
+			META_ECHO    = "echo",
+			META_INCLUDE = "include";
+	
+	private final Set<String> includedResources = new HashSet<String>();
+
+	public BuilderImpl(String resourceName) {
+		if (resourceName != null) {
+			includedResources.add(resourceName);
+		}
+	}
 	
 	@Override
 	public Definition build() throws InputException {
@@ -123,7 +136,7 @@ public class BuilderImpl implements Builder {
 				node.symbol().getName().startsWith(META_PREFIX);
 	}
 	
-	private void handleMetaSymbol(Symbol symbol) {
+	private void handleMetaSymbol(Symbol symbol) throws InputException {
 		String metaOp = symbol.getName().substring(META_PREFIX.length());
 		if (META_ECHO.equals(metaOp)) {
 			StringBuilder sb = new StringBuilder();
@@ -144,8 +157,27 @@ public class BuilderImpl implements Builder {
 				}
 			}
 			log.info("{}", sb.toString().replaceAll("(\\r?\\n)", "$1\t## "));
+		} else if (META_INCLUDE.equals(metaOp)) {
+			for (Rule rule : symbol.getRules()) {
+				for (Node rightNode : rule.getRight()) {
+					if (rightNode instanceof Terminal) {
+						include(((Terminal) rightNode).getText());
+					} else {
+						log.warn("Ignoring nonterminal in include rule: {}", rightNode);
+					}
+				}
+			}
 		} else {
 			log.warn("Unrecognized meta symbol: {}", metaOp);
+		}
+	}
+	
+	private void include(String resouceName) throws InputException {
+		if (!includedResources.contains(resouceName)) {
+			includedResources.add(resouceName);
+			new PlainInput(resouceName).read(this);
+		} else {
+			log.debug("{} is already included", resouceName);
 		}
 	}
 	
