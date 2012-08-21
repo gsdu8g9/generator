@@ -43,7 +43,7 @@ public abstract class AbstractGenerator implements Generator {
 	
 	protected Rule chooseRule(List<Rule> rules) {
 		log.debug("applicable-rules: {}", rules);
-		Rule rule = rules.get(rng.nextInt(rules.size()));
+		Rule rule = ProbabilityUtil.chooseRule(rules, rng);
 		log.debug("chosen-rule: {}", rule);
 		return rule;
 	}

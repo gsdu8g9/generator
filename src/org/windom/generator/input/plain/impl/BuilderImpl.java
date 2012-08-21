@@ -1,6 +1,5 @@
 package org.windom.generator.input.plain.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,12 +55,13 @@ public class BuilderImpl implements Builder {
 	}
 	
 	@Override
-	public Symbol buildSymbol(Symbol left, List<List<Node>> rights) throws InputException {
+	public Symbol buildSymbol(Symbol left, List<Rule> rightSides) throws InputException {
 		Symbol symbol = resolveSymbol(left);
-		if (rights.size() == 0) {
-			rights.add(new ArrayList<Node>());
+		if (rightSides.size() == 0) {
+			rightSides.add(new Rule(0));
 		}
-		for (List<Node> right : rights) {
+		for (Rule rightSide : rightSides) {
+			List<Node> right = rightSide.getRight();
 			for (int i=0; i<right.size(); i++) {
 				Node rightNode = right.get(i);
 				if (isMetaNode(rightNode)) {
@@ -70,7 +70,7 @@ public class BuilderImpl implements Builder {
 				}
 				right.set(i,resolveNode(rightNode));
 			}
-			Rule rule = new Rule(symbol, right);
+			Rule rule = new Rule(rightSide.getProbability(), symbol, right);
 			if (!symbol.getRules().contains(rule) || isMetaNode(symbol)) {
 				symbol.getRules().add(rule);
 			} else {

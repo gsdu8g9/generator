@@ -17,7 +17,7 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			Definition d = new PlainInput("test.txt").read();
-//			System.out.println(d.dump());
+			System.out.println(d.dump());
 			Generator g = new RecursiveGenerator(d);
 			PostProcessor p = new PostProcessorImpl();
 			TreeInstance ti = g.generate();

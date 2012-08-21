@@ -7,6 +7,7 @@ import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Nonterminal;
+import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
 import org.windom.generator.input.InputException;
@@ -15,6 +16,7 @@ import org.windom.generator.input.plain.Parser;
 import org.windom.generator.input.plain.Scanner;
 import org.windom.generator.input.plain.symbol.Identifier;
 import org.windom.generator.input.plain.symbol.Literal;
+import org.windom.generator.input.plain.symbol.Numeric;
 import org.windom.generator.input.plain.symbol.Tag;
 
 public class ParserImpl extends ParserBase implements Parser {
@@ -40,24 +42,40 @@ public class ParserImpl extends ParserBase implements Parser {
 		match(';');
 	}
 	
-	private List<List<Node>> rightSides() throws InputException {
-		List<List<Node>> rights = new ArrayList<List<Node>>();
+	private List<Rule> rightSides() throws InputException {
+		List<Rule> rightSides = new ArrayList<Rule>();
 		if (!matches(';') && !matches(')')) {
-			rights.add(rightSide());
+			rightSides.add(rightSide());
 			while (matches('|')) {
 				match('|');
-				rights.add(rightSide());
+				rightSides.add(rightSide());
 			}
 		}
-		return rights;
+		return rightSides;
 	}
 	
-	private List<Node> rightSide() throws InputException {
-		List<Node> right = new ArrayList<Node>();
+	private Rule rightSide() throws InputException {
+		Rule rightSide = new Rule(probability());
 		while (!matches(';') && !matches('|') && !matches(')')) {
-			right.add(node());
+			rightSide.getRight().add(node());
 		}
-		return right;
+		return rightSide;
+	}
+	
+	private int probability() throws InputException {
+		int probability = 0;
+		if (matches('[')) {
+			match('[');
+			while (matches('!')) {
+				match('!');
+				probability += Rule.PROBABILITY_PRIORITY_VAL;
+			}
+			if (probability == 0 || matches(Tag.NUMERIC)) {
+				probability += ((Numeric) match(Tag.NUMERIC)).getValue();
+			}
+			match(']');
+		}
+		return probability;
 	}
 	
 	private Node node() throws InputException {
