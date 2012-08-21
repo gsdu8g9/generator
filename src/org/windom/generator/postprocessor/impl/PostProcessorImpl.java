@@ -6,10 +6,10 @@ import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
 import org.windom.generator.postprocessor.PostProcessor;
 
-public class PostProcessorImpl implements PostProcessor {
+public class PostProcessorImpl<N extends NodeInstance<N>> implements PostProcessor<N> {
 
 	@Override
-	public String process(TreeInstance<? extends NodeInstance<?>> treeInstance) {
+	public String process(TreeInstance<N> treeInstance) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (Node node : treeInstance.getLimit(true)) {
