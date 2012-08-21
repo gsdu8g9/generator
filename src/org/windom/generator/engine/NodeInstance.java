@@ -9,7 +9,7 @@ import org.windom.util.traversal.TreeNode;
 public class NodeInstance<N extends NodeInstance<N>> implements TreeNode<N> {
 
 	private final Node node;
-	private final RuleInstance<N> ruleInstance;
+	private RuleInstance<N> ruleInstance;
 	
 	public NodeInstance(Node node, RuleInstance<N> ruleInstance) {
 		this.node = node;
@@ -34,6 +34,9 @@ public class NodeInstance<N extends NodeInstance<N>> implements TreeNode<N> {
 	}
 	public RuleInstance<N> getRuleInstance() {
 		return ruleInstance;
+	}
+	public void setRuleInstance(RuleInstance<N> ruleInstance) {
+		this.ruleInstance = ruleInstance;
 	}
 	
 }

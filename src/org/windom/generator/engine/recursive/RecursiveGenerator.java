@@ -102,8 +102,8 @@ public class RecursiveGenerator extends AbstractGenerator<RecursiveNodeInstance>
 			log.debug("{} checking", annotated);
 			log.indent();
 			boolean result = (generate(annotated.getNonterminal(), branchCtx) != null);
-			log.unindent();
 			if (annotated.getAnnotation() == Annotation.FAILS) result = !result;
+			log.unindent();
 			log.debug("{} result: {}", annotated, result);
 			ctx.mergeStats(branchCtx, true);
 			return result ? new RecursiveNodeInstance(annotated) : null;
