@@ -18,9 +18,9 @@ public class Main {
 		try {
 			Definition d = new PlainInput("test.txt").read();
 			System.out.println(d.dump());
-			Generator g = new RecursiveGenerator(d);
+			Generator<?> g = new RecursiveGenerator(d);
 			PostProcessor p = new PostProcessorImpl();
-			TreeInstance ti = g.generate();
+			TreeInstance<?> ti = g.generate();
 			System.out.println(p.process(ti));
 		} catch (Exception e) {
 			log.error("Error testing", e);

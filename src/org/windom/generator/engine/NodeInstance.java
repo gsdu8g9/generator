@@ -6,26 +6,22 @@ import java.util.List;
 import org.windom.generator.definition.Node;
 import org.windom.util.traversal.TreeNode;
 
-public class NodeInstance implements TreeNode<NodeInstance> {
+public class NodeInstance<N extends NodeInstance<N>> implements TreeNode<N> {
 
 	private final Node node;
-	private final RuleInstance ruleInstance;
+	private final RuleInstance<N> ruleInstance;
 	
-	public NodeInstance(Node node, RuleInstance ruleInstance) {
+	public NodeInstance(Node node, RuleInstance<N> ruleInstance) {
 		this.node = node;
 		this.ruleInstance = ruleInstance;
 	}
 	
-	public NodeInstance(Node node) {
-		this(node, null);
-	}
-	
 	@Override
-	public List<NodeInstance> getChildren() {
+	public List<N> getChildren() {
 		if (!isOnLimit()) {
 			return ruleInstance.getNodeInstances();
 		} else {
-			return new ArrayList<NodeInstance>(0);
+			return new ArrayList<N>(0);
 		}
 	}
 
@@ -36,7 +32,7 @@ public class NodeInstance implements TreeNode<NodeInstance> {
 	public Node getNode() {
 		return node;
 	}
-	public RuleInstance getRuleInstance() {
+	public RuleInstance<N> getRuleInstance() {
 		return ruleInstance;
 	}
 	

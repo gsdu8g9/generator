@@ -1,7 +1,7 @@
 package org.windom.generator.engine;
 
-public interface Generator {	
+public interface Generator<N extends NodeInstance<N>> {
 	
-	public TreeInstance generate() throws GeneratorException;
+	public TreeInstance<N> generate() throws GeneratorException;
 	
 }

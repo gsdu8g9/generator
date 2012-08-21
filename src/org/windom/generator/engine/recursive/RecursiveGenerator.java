@@ -11,12 +11,11 @@ import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
-import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.RuleInstance;
 import org.windom.generator.engine.common.AbstractGenerator;
 import org.windom.generator.engine.common.GeneratorContext;
 
-public class RecursiveGenerator extends AbstractGenerator {
+public class RecursiveGenerator extends AbstractGenerator<RecursiveNodeInstance> {
 	
 	public RecursiveGenerator(Definition definition, Random rng) {
 		super(definition, rng);
@@ -27,9 +26,10 @@ public class RecursiveGenerator extends AbstractGenerator {
 	}
 	
 	@Override
-	protected NodeInstance generate(Node node, GeneratorContext ctx) {
+	protected RecursiveNodeInstance generate(Node node, 
+			GeneratorContext<RecursiveNodeInstance> ctx) {
 		if (node instanceof Terminal) {
-			return new NodeInstance(node);
+			return new RecursiveNodeInstance(node);
 		} if (node instanceof Annotated) {
 			return generate((Annotated) node, ctx);
 		} else if (node instanceof Symbol) {
@@ -39,9 +39,9 @@ public class RecursiveGenerator extends AbstractGenerator {
 				List<Rule> rules = new ArrayList<Rule>(node.symbol().getRules());
 				while (!rules.isEmpty()) {					
 					Rule rule = chooseRule(rules);
-					GeneratorContext branchCtx = ctx.branch();
+					GeneratorContext<RecursiveNodeInstance> branchCtx = ctx.branch();
 					log.indent();
-					NodeInstance nodeInstance = generate(rule, branchCtx);
+					RecursiveNodeInstance nodeInstance = generate(rule, branchCtx);
 					log.unindent();
 					if (nodeInstance != null) {
 						ctx.getStats().succeededRule();
@@ -67,10 +67,11 @@ public class RecursiveGenerator extends AbstractGenerator {
 		}
 	}
 	
-	private NodeInstance generate(Annotated annotated, GeneratorContext ctx) {
+	private RecursiveNodeInstance generate(Annotated annotated, 
+			GeneratorContext<RecursiveNodeInstance> ctx) {
 		switch (annotated.getAnnotation()) {
 		case PERM: {
-			NodeInstance nodeInstance = ctx.getPermNodeInstance(annotated);
+			RecursiveNodeInstance nodeInstance = ctx.getPermNodeInstance(annotated);
 			if (nodeInstance == null) {
 				log.debug("{} is not bound", annotated);
 				nodeInstance = generate(annotated.getNonterminal(), ctx);
@@ -83,21 +84,21 @@ public class RecursiveGenerator extends AbstractGenerator {
 		case ADD_TAG: { 
 			ctx.addTag(annotated.symbol().getName());
 			log.debug("{} applied", annotated);
-			return new NodeInstance(annotated);
+			return new RecursiveNodeInstance(annotated);
 		}
 		case DEL_TAG: {
 			ctx.delTag(annotated.symbol().getName());
 			log.debug("{} applied", annotated);
-			return new NodeInstance(annotated);
+			return new RecursiveNodeInstance(annotated);
 		}
 		case CHECK_TAG: {
 			boolean result = ctx.checkTag(annotated.symbol().getName());
 			log.debug("{} result: {}", annotated, result);
-			return result ? new NodeInstance(annotated) : null;
+			return result ? new RecursiveNodeInstance(annotated) : null;
 		}
 		case SUCCEEDS:
 		case FAILS: {
-			GeneratorContext branchCtx = ctx.branch();
+			GeneratorContext<RecursiveNodeInstance> branchCtx = ctx.branch();
 			log.debug("{} checking", annotated);
 			log.indent();
 			boolean result = (generate(annotated.getNonterminal(), branchCtx) != null);
@@ -105,17 +106,18 @@ public class RecursiveGenerator extends AbstractGenerator {
 			if (annotated.getAnnotation() == Annotation.FAILS) result = !result;
 			log.debug("{} result: {}", annotated, result);
 			ctx.mergeStats(branchCtx, true);
-			return result ? new NodeInstance(annotated) : null;
+			return result ? new RecursiveNodeInstance(annotated) : null;
 		}
 		default:
 			throw new RuntimeException("Unsupported symbol annotation: " + annotated.getAnnotation());
 		}
 	}
 	
-	private NodeInstance generate(Rule rule, GeneratorContext ctx) {
-		RuleInstance ruleInstance = new RuleInstance(rule);
+	private RecursiveNodeInstance generate(Rule rule, GeneratorContext<RecursiveNodeInstance> ctx) {
+		RuleInstance<RecursiveNodeInstance> ruleInstance = 
+				new RuleInstance<RecursiveNodeInstance>(rule);
 		for (Node rightNode : rule.getRight()) {
-			NodeInstance rightNodeInstance = generate(rightNode, ctx);
+			RecursiveNodeInstance rightNodeInstance = generate(rightNode, ctx);
 			if (rightNodeInstance != null) {
 				ruleInstance.getNodeInstances().add(rightNodeInstance);
 			} else {
@@ -123,7 +125,7 @@ public class RecursiveGenerator extends AbstractGenerator {
 				return null;
 			}
 		}
-		return new NodeInstance(rule.getLeft(), ruleInstance);
+		return new RecursiveNodeInstance(rule.getLeft(), ruleInstance);
 	}
 	
 }

@@ -12,7 +12,7 @@ import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
 import org.windom.util.IndentedLogger;
 
-public abstract class AbstractGenerator implements Generator {
+public abstract class AbstractGenerator<N extends NodeInstance<N>> implements Generator<N> {
 
 	protected final IndentedLogger log = new IndentedLogger(getClass(), "  ");
 	
@@ -25,9 +25,9 @@ public abstract class AbstractGenerator implements Generator {
 	}
 	
 	@Override
-	public TreeInstance generate() throws GeneratorException {
-		GeneratorContext ctx = new GeneratorContext();
-		NodeInstance startInstance = generate(
+	public TreeInstance<N> generate() throws GeneratorException {
+		GeneratorContext<N> ctx = new GeneratorContext<N>();
+		N startInstance = generate(
 				definition.getStart(),
 				ctx);
 		log.info("succeeded rules: {} failed rules: {}", 
@@ -36,10 +36,10 @@ public abstract class AbstractGenerator implements Generator {
 		if (startInstance == null) {
 			throw new GeneratorException("Failed to generate anything");
 		}
-		return new TreeInstance(startInstance);
+		return new TreeInstance<N>(startInstance);
 	}
 	
-	protected abstract NodeInstance generate(Node node, GeneratorContext ctx);
+	protected abstract N generate(Node node, GeneratorContext<N> ctx);
 	
 	protected Rule chooseRule(List<Rule> rules) {
 		log.debug("applicable-rules: {}", rules);

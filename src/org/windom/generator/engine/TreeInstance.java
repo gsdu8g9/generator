@@ -5,21 +5,21 @@ import java.util.List;
 import org.windom.generator.definition.Node;
 import org.windom.util.traversal.Traversal;
 
-public class TreeInstance {
+public class TreeInstance<N extends NodeInstance<N>> {
 
-	private final NodeInstance startInstance;
+	private final N startInstance;
 	
-	public TreeInstance(NodeInstance startInstance) {
+	public TreeInstance(N startInstance) {
 		this.startInstance = startInstance;
 	}
 
 	public List<Node> getLimit(boolean onlyTerminals) {
-		Limiter limiter = new Limiter(onlyTerminals);
+		Limiter<N> limiter = new Limiter<N>(onlyTerminals);
 		Traversal.depthFirst(startInstance, limiter, limiter);
 		return limiter.getLimit();
 	}
 	
-	public NodeInstance getStartInstance() {
+	public N getStartInstance() {
 		return startInstance;
 	}
 	
