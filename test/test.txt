@@ -1,3 +1,5 @@
-s -> ([3] a | b) 'alma';
-a -> 'kutya';
-b -> [43];
+a -> b c;
+b -> '<' d e '>';
+d -> 'D';
+e -> +alma 'E';
+c -> @alma b;

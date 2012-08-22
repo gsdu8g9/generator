@@ -6,7 +6,7 @@ import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
 import org.windom.generator.postprocessor.PostProcessor;
 
-public class PostProcessorImpl<N extends NodeInstance<N>> implements PostProcessor<N> {
+public class SimplePostProcessor<N extends NodeInstance<N>> implements PostProcessor<N> {
 
 	@Override
 	public String process(TreeInstance<N> treeInstance) {
