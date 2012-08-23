@@ -8,8 +8,8 @@ import org.windom.util.traversal.TreeNode;
 
 public class NodeInstance<N extends NodeInstance<N>> implements TreeNode<N> {
 
-	private final Node node;
-	private RuleInstance<N> ruleInstance;
+	protected final Node node;
+	protected RuleInstance<N> ruleInstance;
 	
 	public NodeInstance(Node node, RuleInstance<N> ruleInstance) {
 		this.node = node;

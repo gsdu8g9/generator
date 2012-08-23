@@ -1,5 +1,5 @@
 a -> b c;
-b -> '<' d e '>';
+b -> d e;
+c -> b;
 d -> 'D';
-e -> +alma 'E';
-c -> @alma b;
+e -> 'E';

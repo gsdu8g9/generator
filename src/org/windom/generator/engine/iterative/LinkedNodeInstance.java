@@ -3,7 +3,7 @@ package org.windom.generator.engine.iterative;
 import org.windom.generator.definition.Node;
 import org.windom.generator.engine.NodeInstance;
 
-public class LinkedNodeInstance<N extends NodeInstance<N>> extends NodeInstance<N> {
+public class LinkedNodeInstance<N extends LinkedNodeInstance<N>> extends NodeInstance<N> {
 
 	private N parent;
 	private N prev;
