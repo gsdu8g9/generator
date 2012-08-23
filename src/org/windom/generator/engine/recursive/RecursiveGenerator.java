@@ -38,7 +38,7 @@ public class RecursiveGenerator extends AbstractGenerator<RecursiveNodeInstance>
 			try {
 				List<Rule> rules = new ArrayList<Rule>(node.symbol().getRules());
 				while (!rules.isEmpty()) {					
-					Rule rule = chooseRule(rules);
+					Rule rule = chooseAndRemoveRule(rules);
 					GeneratorContext<RecursiveNodeInstance> branchCtx = ctx.branch();
 					log.indent();
 					RecursiveNodeInstance nodeInstance = generate(rule, branchCtx);
@@ -53,7 +53,6 @@ public class RecursiveGenerator extends AbstractGenerator<RecursiveNodeInstance>
 					} else {
 						ctx.getStats().failedRule();
 						ctx.merge(branchCtx, false);
-						rules.remove(rule);
 					}
 				}
 				log.debug("no rules to apply");

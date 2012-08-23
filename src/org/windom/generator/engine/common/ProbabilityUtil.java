@@ -7,11 +7,10 @@ import org.windom.generator.definition.Rule;
 
 public class ProbabilityUtil {
 	
-	public static Rule chooseRule(List<Rule> rules, Random rng) {
+	public static int chooseRule(List<Rule> rules, Random rng) {
 		int maxPriorityLevel = maxPriorityLevel(rules);
 		int[] intervals = projectRuleProbabilities(rules, maxPriorityLevel);
-		int index = chooseInterval(intervals, rng);
-		return index >= 0 ? rules.get(index) : null;
+		return chooseInterval(intervals, rng);
 	}
 	
 	private static int maxPriorityLevel(List<Rule> rules) {
