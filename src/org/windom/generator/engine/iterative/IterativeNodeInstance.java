@@ -10,13 +10,12 @@ import org.windom.generator.engine.common.GeneratorContext;
 
 public class IterativeNodeInstance extends LinkedNodeInstance<IterativeNodeInstance> {
 
-	private final GeneratorContext<IterativeNodeInstance> ctx;
+	private GeneratorContext<IterativeNodeInstance> ctx;
 	private final List<Rule> applicableRules;
 	
-	public IterativeNodeInstance(Node node, 
-			GeneratorContext<IterativeNodeInstance> ctx) {
+	public IterativeNodeInstance(Node node) {
 		super(node);
-		this.ctx = ctx;
+		this.ctx = null;
 		this.applicableRules = (node != null && node.symbol() != null)
 				? new ArrayList<Rule>(node.symbol().getRules())
 				: null;
@@ -28,6 +27,9 @@ public class IterativeNodeInstance extends LinkedNodeInstance<IterativeNodeInsta
 	
 	public GeneratorContext<IterativeNodeInstance> getCtx() {
 		return ctx;
+	}
+	public void setCtx(GeneratorContext<IterativeNodeInstance> ctx) {
+		this.ctx = ctx;
 	}
 	public List<Rule> getApplicableRules() {
 		return applicableRules;

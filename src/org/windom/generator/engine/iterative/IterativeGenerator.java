@@ -24,41 +24,68 @@ public class IterativeGenerator extends AbstractGenerator<IterativeNodeInstance>
 	protected IterativeNodeInstance generate(Node node,
 			GeneratorContext<IterativeNodeInstance> ctx) {
 		
-		IterativeNodeInstance currentNode = new IterativeNodeInstance(node, ctx);
+		IterativeNodeInstance currentInstance = new IterativeNodeInstance(node);
+		currentInstance.setCtx(ctx);
 		
-		IterativeNodeInstance successNode = new IterativeNodeInstance(new Symbol("#success"), null);
-		IterativeNodeInstance failureNode = new IterativeNodeInstance(new Symbol("#failure"), null);
-		LinkUtils.link(failureNode, currentNode);
-		LinkUtils.link(currentNode, successNode);
+		IterativeNodeInstance successInstance = new IterativeNodeInstance(new Symbol("#success"));
+		IterativeNodeInstance failureInstance = new IterativeNodeInstance(new Symbol("#failure"));
+		LinkUtils.link(failureInstance, currentInstance);
+		LinkUtils.link(currentInstance, successInstance);
 
 		while (true) {
-			log.info("Generating {}", currentNode);
+			log.info("generating {}", currentInstance.getNode());
 			
-			Rule rule = chooseAndRemoveRule(currentNode.getApplicableRules());
+			generateSymbol(currentInstance);
 			
-			RuleInstance<IterativeNodeInstance> ruleInstance = new RuleInstance<IterativeNodeInstance>(rule);
-			for (Node rightNode : rule.getRight()) {
-				IterativeNodeInstance rightNodeInstance = new IterativeNodeInstance(rightNode, null);
-				ruleInstance.getNodeInstances().add(rightNodeInstance);
-			}
-			currentNode.setRuleInstance(ruleInstance);			
-			LinkUtils.link(currentNode, ruleInstance.getNodeInstances());
+			currentInstance = goDown(currentInstance);			
 			
-			currentNode = LinkUtils.leftmostOnLimit(currentNode);
-			
-			log.info(">>>>{}", currentNode);
-			
-			while (!currentNode.needsGeneration()) {
-				currentNode = LinkUtils.nextOnLimit(currentNode);
-				log.info(">>{}", currentNode);
+			while (!currentInstance.needsGeneration()) {
+				while (currentInstance.getNext() == null) {
+					currentInstance = goUp(currentInstance);
+				}
+				
+				do {
+					currentInstance = goRight(currentInstance);
+				} while (!currentInstance.needsGeneration() && currentInstance.getNext() != null);
 			}
 			
-			if (currentNode == successNode) break;			
-			
+			if (currentInstance == successInstance) break;			
 		}
 
-		return currentNode.getPrev();
-		
+		return currentInstance.getPrev();	
+	}
+	
+	private void generateSymbol(IterativeNodeInstance nodeInstance) {		
+		Rule rule = chooseAndRemoveRule(nodeInstance.getApplicableRules());		
+		RuleInstance<IterativeNodeInstance> ruleInstance = new RuleInstance<IterativeNodeInstance>(rule);
+		for (Node rightNode : rule.getRight()) {
+			IterativeNodeInstance childInstance = new IterativeNodeInstance(rightNode);
+			ruleInstance.getNodeInstances().add(childInstance);
+		}
+		nodeInstance.setRuleInstance(ruleInstance);
+		LinkUtils.link(nodeInstance, ruleInstance.getNodeInstances());
+	}
+	
+	private IterativeNodeInstance goDown(IterativeNodeInstance nodeInstance) {		
+		IterativeNodeInstance childInstance = nodeInstance.getChildren().get(0);
+		log.info("go down {} ==> {}", nodeInstance.getNode(), childInstance.getNode());
+		childInstance.setCtx(nodeInstance.getCtx().branch());
+		return childInstance;
+	}
+	
+	private IterativeNodeInstance goUp(IterativeNodeInstance nodeInstance) {
+		IterativeNodeInstance parentInstance = nodeInstance.getParent();
+		log.info("go up {} ==> {}", nodeInstance.getNode(), parentInstance.getNode());
+		parentInstance.setCtx(nodeInstance.getCtx().branch());
+		parentInstance.getCtx().addTag(parentInstance.getNode().symbol().getName());
+		return parentInstance;
+	}
+	
+	private IterativeNodeInstance goRight(IterativeNodeInstance nodeInstance) {
+		IterativeNodeInstance rightInstance = nodeInstance.getNext();
+		log.info("go right {} ==> {}", nodeInstance.getNode(), rightInstance.getNode());
+		rightInstance.setCtx(nodeInstance.getCtx().branch());
+		return rightInstance;
 	}
 	
 }

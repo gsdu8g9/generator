@@ -6,7 +6,7 @@ import org.windom.generator.definition.Definition;
 import org.windom.generator.engine.Generator;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
-import org.windom.generator.engine.recursive.RecursiveGenerator;
+import org.windom.generator.engine.iterative.IterativeGenerator;
 import org.windom.generator.input.plain.PlainInput;
 import org.windom.generator.postprocessor.PostProcessor;
 import org.windom.generator.postprocessor.impl.ExpansionPostProcessor;
@@ -26,7 +26,7 @@ public class Main {
 		try {
 			Definition d = new PlainInput("test.txt").read();
 			//System.out.println(d.dump());
-			test(new RecursiveGenerator(d));			
+			test(new IterativeGenerator(d));			
 		} catch (Exception e) {
 			log.error("Error testing", e);
 		}
