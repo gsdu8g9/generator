@@ -41,9 +41,10 @@ public abstract class AbstractGenerator implements Generator {
 	
 	protected abstract NodeInstance generate(Node node, GeneratorContext ctx);
 	
-	protected Rule chooseRule(List<Rule> rules) {
+	protected Rule chooseAndRemoveRule(List<Rule> rules) {
 		log.debug("applicable-rules: {}", rules);
-		Rule rule = ProbabilityUtil.chooseRule(rules, rng);
+		int index = ProbabilityUtil.chooseRule(rules, rng);
+		Rule rule = (index >= 0) ? rules.remove(index) : null;
 		log.debug("chosen-rule: {}", rule);
 		return rule;
 	}

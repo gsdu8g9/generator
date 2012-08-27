@@ -38,7 +38,7 @@ public class RecursiveGenerator extends AbstractGenerator {
 			try {
 				List<Rule> rules = new ArrayList<Rule>(node.symbol().getRules());
 				while (!rules.isEmpty()) {					
-					Rule rule = chooseRule(rules);
+					Rule rule = chooseAndRemoveRule(rules);
 					GeneratorContext branchCtx = ctx.branch();
 					log.indent();
 					NodeInstance nodeInstance = generate(rule, branchCtx);
@@ -53,7 +53,6 @@ public class RecursiveGenerator extends AbstractGenerator {
 					} else {
 						ctx.getStats().failedRule();
 						ctx.merge(branchCtx, false);
-						rules.remove(rule);
 					}
 				}
 				log.debug("no rules to apply");
@@ -101,8 +100,8 @@ public class RecursiveGenerator extends AbstractGenerator {
 			log.debug("{} checking", annotated);
 			log.indent();
 			boolean result = (generate(annotated.getNonterminal(), branchCtx) != null);
-			log.unindent();
 			if (annotated.getAnnotation() == Annotation.FAILS) result = !result;
+			log.unindent();
 			log.debug("{} result: {}", annotated, result);
 			ctx.mergeStats(branchCtx, true);
 			return result ? new NodeInstance(annotated) : null;

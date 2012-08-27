@@ -5,7 +5,7 @@ import org.windom.generator.definition.Terminal;
 import org.windom.generator.engine.TreeInstance;
 import org.windom.generator.postprocessor.PostProcessor;
 
-public class PostProcessorImpl implements PostProcessor {
+public class SimplePostProcessor implements PostProcessor {
 
 	@Override
 	public String process(TreeInstance treeInstance) {
