@@ -1,5 +1,5 @@
 a -> b c;
 b -> d e;
-d -> 'd' | 'dd' | 'xxxxx' | 'sdsd';
-e -> 'e' | 'ee' | 'dfgdf' | 'fgdf';
+d -> 'd' | 'dd';
+e -> 'e' | 'ee';
 c -> 'c';

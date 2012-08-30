@@ -23,107 +23,120 @@ public class IterativeGenerator extends AbstractGenerator {
 		super(definition, new Random());
 	}
 	
+	/*
+	 * TODO 
+	 * 1) optimization: don't create waypoints for terminals
+	 * 
+	 */
+	
 	@Override
 	protected NodeInstance generate(Node node, GeneratorContext ctx) {
 		Waypoint initial = new Waypoint(null, null, 0, node);
-		generate(initial);
+		boolean success = new Instance().generate(initial);
+		log.info(">> success: {}", success);
 		return initial.getNodeInstance();
 	}
 	
-	protected void generate(Waypoint current) {	
+	private class Instance {
 		
-		Waypoint backtrack = null;
-		int which = 0;
+		private Waypoint current;
+		private Waypoint backtrack;
+		private int expandIdx;
 		
-		while (true) {
+		private boolean generate(Waypoint start) {			
+			current = start;
+			backtrack = null;
+			expandIdx = 0;
 			
-			NodeInstance nodeInstance = current.getNodeInstance();
-			Node node = nodeInstance.getNode();
-			
-			log.info("");
-			log.info("");
-			log.info("==============================");
-			log.info("waypoint: {}", current);
-			log.info("backtrack:");
-			for (Waypoint bt = backtrack; bt != null; bt = bt.getBacktrack()) {
-				log.info("{}", bt);
-			}
-			log.info("==============================");
-			
-			if (node instanceof Terminal) {
-				log.info("terminal {}", node);
-				which = current.getParentIdx();
-				current = current.getParent();
-				if (current == null) break;				
-				setPar(current, which, nodeInstance);
-				which++;
+			while (true) {
 				
-				if (((Terminal) node).getText().equals("c")) {
-					// backtrack
-					log.info("backtracking to {}", backtrack);
-					current = backtrack;
-					if (current == null) break;
-					backtrack = backtrack.getBacktrack();
-					current.setNodeInstance(new NodeInstance(current.getNodeInstance().getNode()));
-					continue;
+				NodeInstance nodeInstance = current.getNodeInstance();
+				Node node = nodeInstance.getNode();
+				
+				log.info("");
+				log.info("");
+				log.info("==============================");
+				log.info("waypoint: {}", current);
+				log.info("backtrack:");
+				for (Waypoint bt = backtrack; bt != null; bt = bt.getBacktrack()) {
+					log.info("{}", bt);
 				}
-			} else if (node instanceof Symbol) {
-				RuleInstance ruleInstance = nodeInstance.getRuleInstance();
+				log.info("==============================");
 				
-				if (ruleInstance == null) {
-					if (current.getApplicableRules().isEmpty()) {
-						// backtrack
-						log.info("backtracking to {}", backtrack);
-						current = backtrack;
-						if (current == null) break;
-						backtrack = backtrack.getBacktrack();
-						current.setNodeInstance(new NodeInstance(current.getNodeInstance().getNode()));
+				if (node instanceof Terminal) {
+					log.info("terminal {}", node);
+					if (!goup()) return true;
+					
+					if (((Terminal) node).getText().equals("c")) {
+						if (!backtrack()) return false;
 						continue;
 					}
-					Rule rule = chooseAndRemoveRule(current.getApplicableRules());
-					ruleInstance = new RuleInstance(rule);
-					nodeInstance = new NodeInstance(nodeInstance.getNode(), ruleInstance);
-					current.setNodeInstance(nodeInstance);
-					which = 0;
-				}
-				
-				int todo = getTodo(ruleInstance, which);
-				log.info("todo {}", todo);
-				
-				if (todo < 0) {
-					which = current.getParentIdx();
-					current = current.getParent();
-					if (current == null) break;
-					setPar(current, which, nodeInstance);
-					which++;
-				} else {
-					Node nextNode = ruleInstance.getRule().getRight().get(todo);
-					current = new Waypoint(backtrack, current, todo, nextNode);
-					if (current.isDecisionPoint()) {
-						backtrack = current;
+				} else if (node instanceof Symbol) {
+					RuleInstance ruleInstance = nodeInstance.getRuleInstance();
+					
+					if (ruleInstance == null) {
+						if (current.getApplicableRules().isEmpty()) {
+							if (!backtrack()) return false;
+							continue;
+						}
+						Rule rule = chooseAndRemoveRule(current.getApplicableRules());
+						ruleInstance = new RuleInstance(rule);
+						nodeInstance = new NodeInstance(nodeInstance.getNode(), ruleInstance);
+						current.setNodeInstance(nodeInstance);
+						expandIdx = 0;
 					}
+					
+					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
+						if (!goup()) return true;
+					} else {
+						log.info("doing {}", expandIdx);
+						Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
+						current = new Waypoint(backtrack, current, expandIdx, nextNode);
+						if (current.isDecisionPoint()) {
+							backtrack = current;
+						}
+					}
+				} else {
+					throw new RuntimeException("not yet ;)");
 				}
-			} else {
-				throw new RuntimeException("not yet ;)");
 			}
+
 		}
-	}
-	
-	private void setPar(Waypoint wp, int idx, NodeInstance nodeInstance) {
-		List<NodeInstance> is = wp.getNodeInstance().getRuleInstance().getNodeInstances();
-		if (idx > is.size()) {
-			throw new RuntimeException("na ez baj");
-		} else if (idx == is.size()) {
-			is.add(nodeInstance);
-		} else {
-			is.set(idx, nodeInstance);
+		
+		private boolean backtrack() {
+			log.info("backtracking to {}", backtrack);
+			current = backtrack;
+			if (current == null) return false;
+			backtrack = backtrack.getBacktrack();
+			current.setNodeInstance(new NodeInstance(current.getNodeInstance().getNode()));
+			return true;
 		}
-	}
-	
-	private int getTodo(RuleInstance ruleInstance, int which) {
-		if (which >= ruleInstance.getRule().getRight().size())
-			which = -1;
-		return which;
+		
+		private boolean goup() {
+			log.info("going up");
+			
+			NodeInstance nodeInstance = current.getNodeInstance();
+			
+			expandIdx = current.getParentIdx();
+			current = current.getParent();
+			if (current == null) return false;
+			
+			List<NodeInstance> nodeInstances = current
+					.getNodeInstance()
+					.getRuleInstance()
+					.getNodeInstances();
+			
+			if (expandIdx == nodeInstances.size()) {
+				nodeInstances.add(nodeInstance);
+			} else {
+				nodeInstances.set(expandIdx, nodeInstance);
+			}
+			
+			expandIdx++;
+			
+			return true;
+		}
+		
 	}
 	
 }
