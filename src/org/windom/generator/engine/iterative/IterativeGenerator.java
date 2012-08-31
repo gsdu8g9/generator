@@ -1,8 +1,10 @@
 package org.windom.generator.engine.iterative;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
@@ -25,7 +27,7 @@ public class IterativeGenerator extends AbstractGenerator {
 	
 	/*
 	 * TODO 
-	 * 1) optimization: don't create waypoints for terminals
+	 * 1) X optimization: don't create waypoints for terminals, bound perms, add/del/check-tags
 	 * 2) infinite generation detection: if waypoint+ctx matches an older waypoint+ctx combination then
 	 *    we are in an infinite cycle (?)
 	 * 
@@ -33,10 +35,13 @@ public class IterativeGenerator extends AbstractGenerator {
 	
 	@Override
 	protected NodeInstance generate(Node node, GeneratorContext ctx) {
-		Waypoint initial = new Waypoint(null, null, 0, node, ctx);
-		boolean success = new Instance().generate(initial);
-		log.info(">> success: {}", success);
-		return initial.getNodeInstance();
+		Symbol origin = new Symbol("#origin");
+		origin.getRules().add(new Rule(0, origin, Arrays.asList(node)));
+		Waypoint initial = new Waypoint(null, null, 0, origin, ctx);
+		new Instance().generate(initial);
+		RuleInstance ruleInstance = initial.getNodeInstance().getRuleInstance();
+		log.info(">> success: {}", ruleInstance != null);
+		return ruleInstance != null ? ruleInstance.getNodeInstances().get(0) : null;
 	}
 	
 	private class Instance {
@@ -46,11 +51,11 @@ public class IterativeGenerator extends AbstractGenerator {
 		private int expandIdx;
 		private GeneratorContext currentCtx;
 		
-		private boolean generate(Waypoint start) {			
+		private void generate(Waypoint start) {			
 			current = start;
-			backtrack = start.isDecisionPoint() ? start : null;
+			backtrack = start;
 			expandIdx = 0;
-			currentCtx = start.getBacktrackCtx().branch();
+			currentCtx = start.getBacktrackCtx();
 			
 			while (true) {
 					
@@ -68,20 +73,12 @@ public class IterativeGenerator extends AbstractGenerator {
 				}
 				log.info("==============================");
 				
-				if (node instanceof Terminal) {
-					log.info("terminal {}", node);
-					if (!goup()) return true;
-					
-					if (((Terminal) node).getText().equals("c")) {
-						if (!backtrack()) return false;
-						continue;
-					}
-				} else if (node instanceof Symbol) {
+				if (node instanceof Symbol) {
 					RuleInstance ruleInstance = nodeInstance.getRuleInstance();
 					
 					if (ruleInstance == null) {
 						if (current.getApplicableRules().isEmpty()) {
-							if (!backtrack()) return false;
+							if (!backtrack()) return;
 							continue;
 						}
 						Rule rule = chooseAndRemoveRule(current.getApplicableRules());
@@ -93,10 +90,45 @@ public class IterativeGenerator extends AbstractGenerator {
 					
 					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
 						currentCtx.addTag(node.symbol().getName());
-						if (!goup()) return true;
+						if (!goup()) return;
 					} else {
 						log.info("doing {}", expandIdx);
 						Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
+						if (nextNode instanceof Terminal) {
+							log.info("terminal {}", nextNode);
+							ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+							expandIdx++;
+							continue;
+						}
+						if (nextNode instanceof Annotated) {
+							Annotated annotated = (Annotated) nextNode;
+							switch (annotated.getAnnotation()) {
+							case ADD_TAG:
+								log.info("{} applied", annotated);
+								currentCtx.addTag(annotated.symbol().getName());
+								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+								expandIdx++;
+								continue;
+							case DEL_TAG:
+								log.info("{} applied", annotated);
+								currentCtx.delTag(annotated.symbol().getName());
+								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+								expandIdx++;
+								continue;
+							case CHECK_TAG:
+								boolean result = currentCtx.checkTag(annotated.symbol().getName());
+								log.info("{} result: {}", annotated, result);
+								if (result) {
+									ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+									expandIdx++;
+									continue;
+								} else {
+									if (!backtrack()) return;
+									continue;
+								}
+							}
+								
+						}
 						current = new Waypoint(backtrack, current, expandIdx, nextNode, 
 								(expandIdx > 0) ? currentCtx.branch() : current.getBacktrackCtx());
 						if (current.isDecisionPoint()) {
@@ -114,7 +146,9 @@ public class IterativeGenerator extends AbstractGenerator {
 			log.info("backtracking to {}", backtrack);
 			current = backtrack;
 			if (current == null) return false;
-			backtrack = backtrack.getBacktrack();
+			if (!backtrack.isDecisionPoint()) {
+				backtrack = backtrack.getBacktrack();
+			}
 			current.setNodeInstance(new NodeInstance(current.getNodeInstance().getNode()));
 			currentCtx = current.getBacktrackCtx().branch();
 			return true;

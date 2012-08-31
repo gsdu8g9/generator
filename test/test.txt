@@ -1,5 +1,5 @@
-a -> [!] b c | c;
-b -> d e;
-d -> 'd' | 'dd';
-e -> 'e' | 'ee';
-c -> 'c';
+s -> nev 'es' nev 'baratok';
+nev -> [!] @feri ('Geza' +geza | 'Aladar' +aladar) |
+       [!] @geza ('Feri' +feri | 'Aladar' +aladar) |
+       [!] @aladar ('Geza' +geza | 'Feri' +feri ) |
+       'Geza' +geza | 'Feri' +feri | 'Aladar' +aladar;
