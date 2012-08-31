@@ -14,6 +14,11 @@ public class GeneratorContext {
 	private Set<String> tags = new HashSet<String>();
 	private GeneratorStats stats = new GeneratorStats();
 	
+	@Override
+	public String toString() {
+		return String.format("[%08x tags: %s perm: %s]", hashCode(), tags, permNodes.keySet());
+	}
+	
 	public GeneratorContext branch() {
 		GeneratorContext branch = new GeneratorContext();
 		branch.permNodes.putAll(permNodes);

@@ -26,12 +26,14 @@ public class IterativeGenerator extends AbstractGenerator {
 	/*
 	 * TODO 
 	 * 1) optimization: don't create waypoints for terminals
+	 * 2) infinite generation detection: if waypoint+ctx matches an older waypoint+ctx combination then
+	 *    we are in an infinite cycle (?)
 	 * 
 	 */
 	
 	@Override
 	protected NodeInstance generate(Node node, GeneratorContext ctx) {
-		Waypoint initial = new Waypoint(null, null, 0, node);
+		Waypoint initial = new Waypoint(null, null, 0, node, ctx);
 		boolean success = new Instance().generate(initial);
 		log.info(">> success: {}", success);
 		return initial.getNodeInstance();
@@ -42,14 +44,16 @@ public class IterativeGenerator extends AbstractGenerator {
 		private Waypoint current;
 		private Waypoint backtrack;
 		private int expandIdx;
+		private GeneratorContext currentCtx;
 		
 		private boolean generate(Waypoint start) {			
 			current = start;
-			backtrack = null;
+			backtrack = start.isDecisionPoint() ? start : null;
 			expandIdx = 0;
+			currentCtx = start.getBacktrackCtx().branch();
 			
 			while (true) {
-				
+					
 				NodeInstance nodeInstance = current.getNodeInstance();
 				Node node = nodeInstance.getNode();
 				
@@ -57,6 +61,7 @@ public class IterativeGenerator extends AbstractGenerator {
 				log.info("");
 				log.info("==============================");
 				log.info("waypoint: {}", current);
+				log.info("ctx: {}", currentCtx);
 				log.info("backtrack:");
 				for (Waypoint bt = backtrack; bt != null; bt = bt.getBacktrack()) {
 					log.info("{}", bt);
@@ -87,11 +92,13 @@ public class IterativeGenerator extends AbstractGenerator {
 					}
 					
 					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
+						currentCtx.addTag(node.symbol().getName());
 						if (!goup()) return true;
 					} else {
 						log.info("doing {}", expandIdx);
 						Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
-						current = new Waypoint(backtrack, current, expandIdx, nextNode);
+						current = new Waypoint(backtrack, current, expandIdx, nextNode, 
+								(expandIdx > 0) ? currentCtx.branch() : current.getBacktrackCtx());
 						if (current.isDecisionPoint()) {
 							backtrack = current;
 						}
@@ -100,7 +107,7 @@ public class IterativeGenerator extends AbstractGenerator {
 					throw new RuntimeException("not yet ;)");
 				}
 			}
-
+			
 		}
 		
 		private boolean backtrack() {
@@ -109,6 +116,7 @@ public class IterativeGenerator extends AbstractGenerator {
 			if (current == null) return false;
 			backtrack = backtrack.getBacktrack();
 			current.setNodeInstance(new NodeInstance(current.getNodeInstance().getNode()));
+			currentCtx = current.getBacktrackCtx().branch();
 			return true;
 		}
 		
