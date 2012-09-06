@@ -21,17 +21,13 @@ public class Waypoint {
 		this.parent = parent;
 		this.parentIdx = parentIdx;
 		this.nodeInstance = new NodeInstance(node);
-		this.applicableRules = (node != null && node.symbol() != null)
-				? new ArrayList<Rule>(node.symbol().getRules())
-				: null;
-		this.backtrack = isDecisionPoint()
-				? backtrack
-				: null;
+		this.applicableRules = new ArrayList<Rule>(node.symbol().getRules());
+		this.backtrack = isDecisionPoint() ? backtrack : null;
 		this.backtrackCtx = backtrackCtx;
 	}
 
 	public boolean isDecisionPoint() {
-		return applicableRules != null && applicableRules.size() > 1;
+		return applicableRules.size() > 1;
 	}
 	
 	public String toString(boolean showLinks) {
