@@ -1,6 +1,6 @@
 package org.windom.generator.engine;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.windom.generator.definition.Node;
@@ -25,7 +25,7 @@ public class NodeInstance implements TreeNode<NodeInstance> {
 		if (!isOnLimit()) {
 			return ruleInstance.getNodeInstances();
 		} else {
-			return new ArrayList<NodeInstance>(0);
+			return Collections.emptyList();
 		}
 	}
 
