@@ -3,7 +3,7 @@ package org.windom.generator.definition;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Symbol extends Nonterminal {
+public class Symbol implements Node {
 
 	private final String name;
 	private final List<Rule> rules;
@@ -12,21 +12,24 @@ public class Symbol extends Nonterminal {
 		this.name = name;
 		this.rules = new ArrayList<Rule>();
 	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+	
+	@Override
+	public Symbol getSymbol() {
+		return this;
+	}
 	
 	@Override
 	public List<Node> getChildren() {
 		List<Node> children = new ArrayList<Node>();
 		for (Rule rule : rules) {
-			for (Node rightNode : rule.getRight()) {
-				children.add(rightNode);
-			}
+			children.addAll(rule.getRight());
 		}
 		return children;
-	}
-
-	@Override
-	public Symbol symbol() {
-		return this;
 	}
 	
 	@Override
@@ -59,9 +62,6 @@ public class Symbol extends Nonterminal {
 		return true;
 	}
 
-	public String getName() {
-		return name;
-	}
 	public List<Rule> getRules() {
 		return rules;
 	}

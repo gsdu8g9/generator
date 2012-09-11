@@ -4,6 +4,7 @@ import org.windom.util.traversal.TreeNode;
 
 public interface Node extends TreeNode<Node> {
 
-	public Symbol symbol();
+	public String getName();
+	public Symbol getSymbol();
 	
 }

@@ -42,12 +42,12 @@ public class GeneratorContext {
 		}
 	}
 	
-	public NodeInstance getPermNodeInstance(Annotated node) {
-		return permNodes.get(node.symbol().getName());
+	public NodeInstance getPermNodeInstance(Annotated annotated) {
+		return permNodes.get(annotated.getNode().getName());
 	}
 	
-	public void setPermNodeInstance(Annotated node, NodeInstance nodeInstance) {
-		permNodes.put(node.symbol().getName(), nodeInstance);
+	public void setPermNodeInstance(Annotated annotated, NodeInstance nodeInstance) {
+		permNodes.put(annotated.getNode().getName(), nodeInstance);
 	}
 	
 	public void addTag(String tag) {

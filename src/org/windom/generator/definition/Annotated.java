@@ -2,32 +2,33 @@ package org.windom.generator.definition;
 
 import java.util.List;
 
-public class Annotated extends Nonterminal {
+public class Annotated implements Node {
 
 	private final Annotation annotation;
-	private Nonterminal nonterminal;
+	private Node node;
 	
-	public Annotated(Annotation annotation, Nonterminal nonterminal) {
+	public Annotated(Annotation annotation, Node node) {
 		this.annotation = annotation;
-		this.nonterminal = nonterminal;
+		this.node = node;
 	}
 
+	@Override
 	public String getName() {
-		return getName(annotation, nonterminal); 
+		return getName(annotation, node); 
 	}
 
-	public static String getName(Annotation annotation, Nonterminal nonterminal) {
-		return Character.toString(annotation.getMark()) + nonterminal;
+	public static String getName(Annotation annotation, Node node) {
+		return Character.toString(annotation.getMark()) + node;
+	}
+
+	@Override
+	public Symbol getSymbol() {
+		return node.getSymbol();
 	}
 	
 	@Override
 	public List<Node> getChildren() {
-		return nonterminal.getChildren();
-	}
-
-	@Override
-	public Symbol symbol() {
-		return nonterminal.symbol();
+		return node.getChildren();
 	}
 	
 	@Override
@@ -41,8 +42,7 @@ public class Annotated extends Nonterminal {
 		int result = 1;
 		result = prime * result
 				+ ((annotation == null) ? 0 : annotation.hashCode());
-		result = prime * result
-				+ ((nonterminal == null) ? 0 : nonterminal.hashCode());
+		result = prime * result + ((node == null) ? 0 : node.hashCode());
 		return result;
 	}
 
@@ -57,10 +57,10 @@ public class Annotated extends Nonterminal {
 		Annotated other = (Annotated) obj;
 		if (annotation != other.annotation)
 			return false;
-		if (nonterminal == null) {
-			if (other.nonterminal != null)
+		if (node == null) {
+			if (other.node != null)
 				return false;
-		} else if (!nonterminal.equals(other.nonterminal))
+		} else if (!node.equals(other.node))
 			return false;
 		return true;
 	}
@@ -68,11 +68,11 @@ public class Annotated extends Nonterminal {
 	public Annotation getAnnotation() {
 		return annotation;
 	}
-	public Nonterminal getNonterminal() {
-		return nonterminal;
+	public Node getNode() {
+		return node;
 	}
-	public void setNonterminal(Nonterminal nonterminal) {
-		this.nonterminal = nonterminal;
+	public void setNode(Node node) {
+		this.node = node;
 	}
 	
 }

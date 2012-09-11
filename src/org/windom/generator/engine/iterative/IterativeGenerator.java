@@ -89,7 +89,7 @@ public class IterativeGenerator extends AbstractGenerator {
 					}
 					
 					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
-						currentCtx.addTag(node.symbol().getName());
+						currentCtx.addTag(((Symbol) node).getName());
 						if (!goup()) return;
 					} else {
 						log.info("doing {}", expandIdx);
@@ -105,18 +105,18 @@ public class IterativeGenerator extends AbstractGenerator {
 							switch (annotated.getAnnotation()) {
 							case ADD_TAG:
 								log.info("{} applied", annotated);
-								currentCtx.addTag(annotated.symbol().getName());
+								currentCtx.addTag(annotated.getNode().getName());
 								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
 								expandIdx++;
 								continue;
 							case DEL_TAG:
 								log.info("{} applied", annotated);
-								currentCtx.delTag(annotated.symbol().getName());
+								currentCtx.delTag(annotated.getNode().getName());
 								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
 								expandIdx++;
 								continue;
 							case CHECK_TAG:
-								boolean result = currentCtx.checkTag(annotated.symbol().getName());
+								boolean result = currentCtx.checkTag(annotated.getNode().getName());
 								log.info("{} result: {}", annotated, result);
 								if (result) {
 									ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));

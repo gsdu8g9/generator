@@ -36,8 +36,8 @@ public class RecursiveGenerator extends AbstractGenerator {
 			log.debug("begin-generate {}", node);
 			log.indent();
 			try {
-				List<Rule> rules = new ArrayList<Rule>(node.symbol().getRules());
-				while (!rules.isEmpty()) {					
+				List<Rule> rules = new ArrayList<Rule>(((Symbol) node).getRules());
+				while (!rules.isEmpty()) {
 					Rule rule = chooseAndRemoveRule(rules);
 					GeneratorContext branchCtx = ctx.branch();
 					log.indent();
@@ -47,7 +47,7 @@ public class RecursiveGenerator extends AbstractGenerator {
 						ctx.getStats().succeededRule();
 						ctx.merge(branchCtx, true);
 						generate(
-							new Annotated(Annotation.ADD_TAG, node.symbol()),
+							new Annotated(Annotation.ADD_TAG, node),
 							ctx);
 						return nodeInstance;
 					} else {
@@ -72,7 +72,7 @@ public class RecursiveGenerator extends AbstractGenerator {
 			NodeInstance nodeInstance = ctx.getPermNodeInstance(annotated);
 			if (nodeInstance == null) {
 				log.debug("{} is not bound", annotated);
-				nodeInstance = generate(annotated.getNonterminal(), ctx);
+				nodeInstance = generate(annotated.getNode(), ctx);
 				ctx.setPermNodeInstance(annotated, nodeInstance);					
 			} else {
 				log.debug("{} is already bound", annotated);
@@ -80,17 +80,17 @@ public class RecursiveGenerator extends AbstractGenerator {
 			return nodeInstance;
 		}
 		case ADD_TAG: { 
-			ctx.addTag(annotated.symbol().getName());
+			ctx.addTag(annotated.getNode().getName());
 			log.debug("{} applied", annotated);
 			return new NodeInstance(annotated);
 		}
 		case DEL_TAG: {
-			ctx.delTag(annotated.symbol().getName());
+			ctx.delTag(annotated.getNode().getName());
 			log.debug("{} applied", annotated);
 			return new NodeInstance(annotated);
 		}
 		case CHECK_TAG: {
-			boolean result = ctx.checkTag(annotated.symbol().getName());
+			boolean result = ctx.checkTag(annotated.getNode().getName());
 			log.debug("{} result: {}", annotated, result);
 			return result ? new NodeInstance(annotated) : null;
 		}
@@ -99,7 +99,7 @@ public class RecursiveGenerator extends AbstractGenerator {
 			GeneratorContext branchCtx = ctx.branch();
 			log.debug("{} checking", annotated);
 			log.indent();
-			boolean result = (generate(annotated.getNonterminal(), branchCtx) != null);
+			boolean result = (generate(annotated.getNode(), branchCtx) != null);
 			if (annotated.getAnnotation() == Annotation.FAILS) result = !result;
 			log.unindent();
 			log.debug("{} result: {}", annotated, result);

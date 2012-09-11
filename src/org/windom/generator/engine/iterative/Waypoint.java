@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
+import org.windom.generator.definition.Symbol;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.common.GeneratorContext;
 
@@ -21,7 +22,7 @@ public class Waypoint {
 		this.parent = parent;
 		this.parentIdx = parentIdx;
 		this.nodeInstance = new NodeInstance(node);
-		this.applicableRules = new ArrayList<Rule>(node.symbol().getRules());
+		this.applicableRules = new ArrayList<Rule>(((Symbol) node).getRules());
 		this.backtrack = isDecisionPoint() ? backtrack : null;
 		this.backtrackCtx = backtrackCtx;
 	}

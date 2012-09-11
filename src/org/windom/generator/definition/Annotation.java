@@ -13,7 +13,7 @@ public enum Annotation {
 		PERM, ADD_TAG, DEL_TAG, CHECK_TAG
 	};
 	
-	public static final Annotation[] ON_NONTERMINAL = new Annotation[] {
+	public static final Annotation[] ON_NODE = new Annotation[] {
 		SUCCEEDS, FAILS
 	};
 	

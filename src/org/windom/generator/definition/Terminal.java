@@ -1,6 +1,6 @@
 package org.windom.generator.definition;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Terminal implements Node {
@@ -12,18 +12,23 @@ public class Terminal implements Node {
 	}
 	
 	@Override
-	public List<Node> getChildren() {
-		return new ArrayList<Node>(0);
+	public String getName() {
+		return "'" + text + "'";
 	}
 
 	@Override
-	public Symbol symbol() {
+	public Symbol getSymbol() {
 		return null;
 	}
 	
 	@Override
+	public List<Node> getChildren() {
+		return Collections.emptyList();
+	}
+	
+	@Override
 	public String toString() {
-		return "'" + text + "'";
+		return getName();
 	}
 	
 	@Override

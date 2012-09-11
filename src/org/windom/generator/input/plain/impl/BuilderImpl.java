@@ -13,7 +13,6 @@ import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
-import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
@@ -27,7 +26,7 @@ public class BuilderImpl implements Builder {
 	
 	private final Map<String,Symbol> symbolMap = new HashMap<String,Symbol>();
 	private final Map<String,Annotated> annotatedMap = new HashMap<String,Annotated>();
-	private Nonterminal start = null;
+	private Node start = null;
 	
 	private static final String PHANTOM_SYMBOL_MASK = "#%d";
 	private int phantomSymbolCount = 0;
@@ -88,18 +87,12 @@ public class BuilderImpl implements Builder {
 	}
 	
 	private Node resolveNode(Node node) {
-		if (node instanceof Nonterminal) {
-			return resolveNonterminal((Nonterminal) node);
+		if (node instanceof Annotated) {
+			return resolveAnnotated((Annotated) node);
+		} else if (node instanceof Symbol) {
+			return resolveSymbol((Symbol) node);
 		} else {
 			return node;
-		}
-	}
-	
-	private Nonterminal resolveNonterminal(Nonterminal nonterminal) {
-		if (nonterminal instanceof Annotated) {
-			return resolveAnnotated((Annotated) nonterminal);
-		} else {
-			return resolveSymbol((Symbol) nonterminal);
 		}
 	}
 	
@@ -108,7 +101,7 @@ public class BuilderImpl implements Builder {
 		if (annotatedMap.containsKey(name)) {
 			annotated = annotatedMap.get(name);
 		} else {
-			annotated.setNonterminal(resolveNonterminal(annotated.getNonterminal()));
+			annotated.setNode(resolveNode(annotated.getNode()));
 			annotatedMap.put(name, annotated);
 		}
 		return annotated;
@@ -132,8 +125,8 @@ public class BuilderImpl implements Builder {
 	}
 
 	private boolean isMetaNode(Node node) {
-		return node.symbol() != null &&
-				node.symbol().getName().startsWith(META_PREFIX);
+		return node.getSymbol() != null &&
+				node.getSymbol().getName().startsWith(META_PREFIX);
 	}
 	
 	private void handleMetaSymbol(Symbol symbol) throws InputException {

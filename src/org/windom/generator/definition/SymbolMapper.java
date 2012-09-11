@@ -12,13 +12,13 @@ public class SymbolMapper implements Visitor<Node>, Evaluator<Node> {
 	
 	@Override
 	public boolean prune(Node node) {
-		return node.symbol() == null || symbolMap.containsKey(node.symbol().getName());
+		return node.getSymbol() == null || symbolMap.containsKey(node.getSymbol().getName());
 	}
 	
 	@Override
 	public void visit(Node node) {
-		Symbol symbol = node.symbol();
-		symbolMap.put(symbol.getName(), symbol);		
+		Symbol symbol = node.getSymbol();
+		symbolMap.put(symbol.getName(), symbol);
 	}
 	
 	public Map<String,Symbol> getSymbolMap() {

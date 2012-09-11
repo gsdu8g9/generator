@@ -6,7 +6,6 @@ import java.util.List;
 import org.windom.generator.definition.Annotated;
 import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Node;
-import org.windom.generator.definition.Nonterminal;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
 import org.windom.generator.definition.Terminal;
@@ -57,7 +56,7 @@ public class ParserImpl extends ParserBase implements Parser {
 	private Rule rightSide() throws InputException {
 		Rule rightSide = new Rule(probability());
 		while (!matches(';') && !matches('|') && !matches(')')) {
-			rightSide.getRight().add(node());
+			rightSide.getRight().add(factor());
 		}
 		return rightSide;
 	}
@@ -77,47 +76,39 @@ public class ParserImpl extends ParserBase implements Parser {
 		}
 		return probability;
 	}
+
+	private Node factor() throws InputException {
+		for (Annotation annotation : Annotation.ON_NODE) {
+			if (matches(annotation.getMark())) {
+				match(annotation.getMark());
+				return new Annotated(annotation, factor());
+			}
+		}
+		return node();
+	}
 	
 	private Node node() throws InputException {
 		Node node = null;
 		if (matches(Tag.LITERAL)) {
 			Literal literal = (Literal) match(Tag.LITERAL);
 			node = new Terminal(literal.getText());
-		} else {
-			node = factor();
-		}
-		return node;
-	}
-	
-	private Nonterminal factor() throws InputException {
-		for (Annotation annotation : Annotation.ON_NONTERMINAL) {
-			if (matches(annotation.getMark())) {
-				match(annotation.getMark());
-				return new Annotated(annotation, factor());
-			}
-		}
-		return nonterminal();
-	}
-	
-	private Nonterminal nonterminal() throws InputException {
-		Nonterminal nonterminal = null;
-		if (matches('(')) {
+		} else if (matches('(')) {
 			match('(');
-			nonterminal = builder.buildSymbol(null, rightSides());
+			node = builder.buildSymbol(null, rightSides());
 			match(')');
 		} else {
 			for (Annotation annotation : Annotation.ON_SYMBOL) {
 				if (matches(annotation.getMark())) {
 					match(annotation.getMark());
-					nonterminal = new Annotated(annotation, symbol());
+					node = new Annotated(annotation, symbol());
 					break;
 				}
 			}
-			if (nonterminal == null) {
-				nonterminal = symbol();
+			if (node == null) {
+				node = symbol();
 			}
 		}
-		return nonterminal;
+		return node;
 	}
 	
 	private Symbol symbol() throws InputException {
