@@ -78,13 +78,10 @@ public class ParserImpl extends ParserBase implements Parser {
 	}
 
 	private Node factor() throws InputException {
-		for (Annotation annotation : Annotation.ON_NODE) {
-			if (matches(annotation.getMark())) {
-				match(annotation.getMark());
-				return new Annotated(annotation, factor());
-			}
-		}
-		return node();
+		Annotation annotation = match(Annotation.ON_NODE);
+		return annotation != null
+			? new Annotated(annotation, factor())
+			: node();
 	}
 	
 	private Node node() throws InputException {
@@ -97,14 +94,14 @@ public class ParserImpl extends ParserBase implements Parser {
 			node = builder.buildSymbol(null, rightSides());
 			match(')');
 		} else {
-			for (Annotation annotation : Annotation.ON_SYMBOL) {
-				if (matches(annotation.getMark())) {
-					match(annotation.getMark());
-					node = new Annotated(annotation, symbol());
-					break;
-				}
-			}
-			if (node == null) {
+			Annotation annotation;
+			if ((annotation = match(Annotation.ON_SYMBOL_TERMINAL)) != null) {
+				node = new Annotated(annotation, matches(Tag.LITERAL)
+						? terminal()
+						: symbol());
+			} else if ((annotation = match(Annotation.ON_SYMBOL)) != null) {
+				node = new Annotated(annotation, symbol());
+			} else {
 				node = symbol();
 			}
 		}
@@ -114,6 +111,21 @@ public class ParserImpl extends ParserBase implements Parser {
 	private Symbol symbol() throws InputException {
 		Identifier identifier = (Identifier) match(Tag.IDENTIFIER);
 		return new Symbol(identifier.getLexeme());
+	}
+	
+	private Terminal terminal() throws InputException {
+		Literal literal = (Literal) match(Tag.LITERAL);
+		return new Terminal(literal.getText());
+	}
+	
+	private Annotation match(Annotation[] annotations) throws InputException {
+		for (Annotation annotation : annotations) {
+			if (matches(annotation.getMark())) {
+				match(annotation.getMark());
+				return annotation;
+			}
+		}
+		return null;
 	}
 	
 }
