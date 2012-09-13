@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.windom.generator.definition.Annotated;
+import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
@@ -73,7 +74,8 @@ public class IterativeGenerator extends AbstractGenerator {
 				}
 				log.info("==============================");
 				
-				if (node instanceof Symbol) {
+				if (true) {
+				//if (node instanceof Symbol) {
 					RuleInstance ruleInstance = nodeInstance.getRuleInstance();
 					
 					if (ruleInstance == null) {
@@ -89,8 +91,28 @@ public class IterativeGenerator extends AbstractGenerator {
 					}
 					
 					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
-						currentCtx.addTag(((Symbol) node).getName());
-						if (!goup()) return;
+						if (node instanceof Annotated) {
+							Annotation annotation = ((Annotated) node).getAnnotation();
+							switch (annotation) {
+							case SUCCEEDS:
+								log.info("{} succeeded", node);
+								currentCtx = current.getBacktrackCtx().branch();
+								backtrack = current.getBacktrack();
+								current.setNodeInstance(new NodeInstance(node));
+								if (!goup()) return;
+								break;
+							case FAILS:
+								log.info("{} failed", node);
+								backtrack = current.getBacktrack();
+								if (!backtrack()) return;
+								break;
+							default:
+								throw new RuntimeException("this cannot be");
+							}
+						} else {
+							currentCtx.addTag(node.getName());
+							if (!goup()) return;
+						}
 					} else {
 						log.info("doing {}", expandIdx);
 						Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
@@ -146,12 +168,20 @@ public class IterativeGenerator extends AbstractGenerator {
 			log.info("backtracking to {}", backtrack);
 			current = backtrack;
 			if (current == null) return false;
+			boolean backtrackRemains = true;
 			if (!backtrack.isDecisionPoint()) {
 				backtrack = backtrack.getBacktrack();
+				backtrackRemains = false;
 			}
-			current.setNodeInstance(new NodeInstance(current.getNodeInstance().getNode()));
+			Node currentNode = current.getNodeInstance().getNode();
+			current.setNodeInstance(new NodeInstance(currentNode));
 			currentCtx = current.getBacktrackCtx().branch();
-			return true;
+			if (!backtrackRemains && Annotated.has(currentNode, Annotation.FAILS)) {
+				log.info("{} succeeded", currentNode);
+				return goup();
+			} else {
+				return true;
+			}
 		}
 		
 		private boolean goup() {

@@ -12,6 +12,11 @@ public class Annotated implements Node {
 		this.node = node;
 	}
 
+	public static boolean has(Node node, Annotation annotation) {
+		return node instanceof Annotated &&
+			((Annotated) node).getAnnotation() == annotation;
+	}
+	
 	@Override
 	public String getName() {
 		return getName(annotation, node); 

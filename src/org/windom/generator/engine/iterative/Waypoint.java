@@ -1,8 +1,11 @@
 package org.windom.generator.engine.iterative;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.windom.generator.definition.Annotated;
+import org.windom.generator.definition.Annotation;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
@@ -22,13 +25,30 @@ public class Waypoint {
 		this.parent = parent;
 		this.parentIdx = parentIdx;
 		this.nodeInstance = new NodeInstance(node);
-		this.applicableRules = new ArrayList<Rule>(((Symbol) node).getRules());
+		this.applicableRules = getApplicableRules(node);
 		this.backtrack = isDecisionPoint() ? backtrack : null;
 		this.backtrackCtx = backtrackCtx;
 	}
 
+	private static List<Rule> getApplicableRules(Node node) {
+		if (node instanceof Annotated) {
+			Annotated annotated = (Annotated) node;
+			if (!(annotated.getNode() instanceof Symbol)) {
+				Rule rule = new Rule(0, null, Collections.singletonList(annotated.getNode()));
+				List<Rule> rules = new ArrayList<Rule>(1);
+				rules.add(rule);
+				return rules;
+			}
+		}
+		return new ArrayList<Rule>(node.getSymbol().getRules());
+	}
+	
 	public boolean isDecisionPoint() {
-		return applicableRules.size() > 1;
+		return (applicableRules.size() > 1) || 
+				(applicableRules.size() > 0 && (
+						Annotated.has(nodeInstance.getNode(), Annotation.SUCCEEDS) ||
+						Annotated.has(nodeInstance.getNode(), Annotation.FAILS)
+					));
 	}
 	
 	public String toString(boolean showLinks) {
