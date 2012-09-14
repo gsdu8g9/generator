@@ -56,7 +56,7 @@ public class IterativeGenerator extends AbstractGenerator {
 			current = start;
 			backtrack = start;
 			expandIdx = 0;
-			currentCtx = start.getBacktrackCtx();
+			currentCtx = start.getBacktrackCtx().branch();
 			
 			while (true) {
 					

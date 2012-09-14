@@ -1,6 +1,4 @@
-s -> ?(a !?!??!!b !@c);
-b -> c;
-c -> 'c';
+s -> [!] a @kutya | !@a 'lofasz';
 a -> 'a';
 
 #s -> nev 'es' nev 'baratok' 'es meg van' nev 'is';
