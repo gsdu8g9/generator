@@ -52,45 +52,91 @@ public class IterativeGenerator extends AbstractGenerator {
 		private int expandIdx;
 		private GeneratorContext currentCtx;
 		
-		private void generate(Waypoint start) {			
+		private void generate(Waypoint start) {
 			current = start;
 			backtrack = start;
 			expandIdx = 0;
 			currentCtx = start.getBacktrackCtx().branch();
 			
-			while (true) {
+			mainCycle: while (true) {
+				if (log.isDebugEnabled())
+					logCycle();
+				
 				NodeInstance nodeInstance = current.getNodeInstance();
 				Node node = nodeInstance.getNode();
-				
-				log.info("");
-				log.info("waypoint: {}", current);
-				log.info("ctx: {}", currentCtx);
-				log.info("backtrack:");
-				for (Waypoint bt = backtrack; bt != null; bt = bt.getBacktrack()) {
-					log.info("{}", bt);
-				}
-				log.info("==============================");
-				
 				RuleInstance ruleInstance = nodeInstance.getRuleInstance();
 				
 				if (ruleInstance == null) {
 					if (current.getApplicableRules().isEmpty()) {
-						if (!backtrack()) return;
+						log.debug("no rules to apply");
+						if (!backtrack()) break;
 						continue;
 					}
 					Rule rule = chooseAndRemoveRule(current.getApplicableRules());
 					ruleInstance = new RuleInstance(rule);
-					nodeInstance = new NodeInstance(nodeInstance.getNode(), ruleInstance);
+					nodeInstance = new NodeInstance(node, ruleInstance);
 					current.setNodeInstance(nodeInstance);
 					expandIdx = 0;
 				}
 				
-				if (expandIdx >= ruleInstance.getRule().getRight().size()) {
+				List<Node> ruleRight = ruleInstance.getRule().getRight();
+				
+				innerCycle: while (expandIdx < ruleRight.size()) {
+					Node childNode = ruleRight.get(expandIdx);
+					if (childNode instanceof Terminal) {
+						log.debug("@{} terminal {}", expandIdx, childNode);
+						setChild(nodeInstance, expandIdx++, new NodeInstance(childNode));
+					} else if (childNode instanceof Annotated) {
+						Annotated annotated = (Annotated) childNode;
+						switch (annotated.getAnnotation()) {
+						case PERM:
+							NodeInstance permNodeInstance = currentCtx.getPermNodeInstance(annotated);
+							boolean bound = permNodeInstance != null;
+							log.debug("@{} {} bound: {}", expandIdx, annotated, bound);
+							if (!bound) break innerCycle;
+							setChild(nodeInstance, expandIdx++, permNodeInstance);
+							break;
+						case ADD_TAG:
+							log.debug("@{} {} applied", expandIdx, annotated);
+							currentCtx.addTag(annotated.getNode().getName());
+							setChild(nodeInstance, expandIdx++, new NodeInstance(childNode));
+							break;
+						case DEL_TAG:
+							log.debug("@{} {} applied", expandIdx, annotated);
+							currentCtx.delTag(annotated.getNode().getName());
+							setChild(nodeInstance, expandIdx++, new NodeInstance(childNode));
+							break;
+						case CHECK_TAG:
+							boolean result = currentCtx.checkTag(annotated.getNode().getName());
+							log.debug("@{} {} result: {}", expandIdx, annotated, result);
+							if (!result) {
+								if (!backtrack()) return;
+								continue mainCycle;
+							}
+							setChild(nodeInstance, expandIdx++, new NodeInstance(childNode));
+							break;
+						default:
+							break innerCycle;
+						}
+					} else {
+						break innerCycle;
+					}
+				}
+				
+				if (expandIdx < ruleRight.size()) {
+					Node childNode = ruleRight.get(expandIdx);
+					log.debug("@{} cycle for {}", expandIdx, childNode);
+					current = new Waypoint(backtrack, current, expandIdx, childNode, 
+							(expandIdx > 0) ? currentCtx.branch() : current.getBacktrackCtx());
+					if (current.isDecisionPoint()) {
+						backtrack = current;
+					}
+				} else {
 					if (node instanceof Annotated) {
 						Annotated annotated = (Annotated) node;
 						switch (annotated.getAnnotation()) {
 						case PERM:
-							log.info("{} bound", annotated);
+							log.debug("{} bound", annotated);
 							currentCtx.setPermNodeInstance(annotated, nodeInstance);
 							if (annotated.getNode() instanceof Symbol) {
 								currentCtx.addTag(annotated.getNode().getName());
@@ -98,89 +144,54 @@ public class IterativeGenerator extends AbstractGenerator {
 							if (!goup()) return;
 							break;
 						case SUCCEEDS:
-							log.info("{} succeeded", node);
+							log.debug("{} succeeded", node);
 							currentCtx = current.getBacktrackCtx().branch();
 							backtrack = current.getBacktrack();
 							current.setNodeInstance(new NodeInstance(node));
 							if (!goup()) return;
 							break;
 						case FAILS:
-							log.info("{} failed", node);
+							log.debug("{} failed", node);
 							backtrack = current.getBacktrack();
 							if (!backtrack()) return;
 							break;
 						default:
-							throw new RuntimeException("this cannot be");
+							throw new RuntimeException("impossibru");
 						}
 					} else {
+						log.debug("{} completed", node);
 						currentCtx.addTag(node.getName());
 						if (!goup()) return;
-					}
-				} else {
-					log.info("doing {}", expandIdx);
-					Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
-					if (nextNode instanceof Terminal) {
-						log.info("terminal {}", nextNode);
-						setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));
-						continue;
-					}
-					if (nextNode instanceof Annotated) {
-						Annotated annotated = (Annotated) nextNode;
-						switch (annotated.getAnnotation()) {
-						case PERM:
-							NodeInstance permNodeInstance = currentCtx.getPermNodeInstance(annotated);
-							log.info("{} bound: {}", annotated, (permNodeInstance != null));
-							if (permNodeInstance != null) {
-								setChild(nodeInstance, expandIdx++, permNodeInstance);
-								continue;
-							}
-							break;
-						case ADD_TAG:
-							log.info("{} applied", annotated);
-							currentCtx.addTag(annotated.getNode().getName());
-							setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
-							continue;
-						case DEL_TAG:
-							log.info("{} applied", annotated);
-							currentCtx.delTag(annotated.getNode().getName());
-							setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
-							continue;
-						case CHECK_TAG:
-							boolean result = currentCtx.checkTag(annotated.getNode().getName());
-							log.info("{} result: {}", annotated, result);
-							if (result) {
-								setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));									
-								continue;
-							} else {
-								if (!backtrack()) return;
-								continue;
-							}
-						}
-							
-					}
-					current = new Waypoint(backtrack, current, expandIdx, nextNode, 
-							(expandIdx > 0) ? currentCtx.branch() : current.getBacktrackCtx());
-					if (current.isDecisionPoint()) {
-						backtrack = current;
 					}
 				}
 			}
 		}
 		
+		private void logCycle() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("\n\nwaypoint: "); sb.append(current);
+			sb.append("\nctx: "); sb.append(currentCtx);
+			sb.append("\nbacktrack:\n");
+			for (Waypoint bt = backtrack; bt != null; bt = bt.getBacktrack()) {
+				sb.append(bt);
+				sb.append('\n');
+			}
+			log.debug("{}", sb);
+		}
+		
 		private boolean backtrack() {
-			log.info("backtracking to {}", backtrack);
+			log.debug("backtracking to {}", backtrack);
 			current = backtrack;
 			if (current == null) return false;
-			boolean backtrackRemains = true;
-			if (!backtrack.isDecisionPoint()) {
+			boolean backtrackExhausted = !backtrack.isDecisionPoint();
+			if (backtrackExhausted) {
 				backtrack = backtrack.getBacktrack();
-				backtrackRemains = false;
 			}
 			Node currentNode = current.getNodeInstance().getNode();
 			current.setNodeInstance(new NodeInstance(currentNode));
 			currentCtx = current.getBacktrackCtx().branch();
-			if (!backtrackRemains && Annotated.has(currentNode, Annotation.FAILS)) {
-				log.info("{} succeeded", currentNode);
+			if (backtrackExhausted && Annotated.has(currentNode, Annotation.FAILS)) {
+				log.debug("{} succeeded", currentNode);
 				return goup();
 			} else {
 				return true;
@@ -188,16 +199,12 @@ public class IterativeGenerator extends AbstractGenerator {
 		}
 		
 		private boolean goup() {
-			log.info("going up");
-			
-			NodeInstance nodeInstance = current.getNodeInstance();
-			
+			log.debug("going up");			
+			NodeInstance nodeInstance = current.getNodeInstance();			
 			expandIdx = current.getParentIdx();
 			current = current.getParent();
-			if (current == null) return false;
-			
-			setChild(current.getNodeInstance(), expandIdx++, nodeInstance);
-			
+			if (current == null) return false;			
+			setChild(current.getNodeInstance(), expandIdx++, nodeInstance);			
 			return true;
 		}
 		

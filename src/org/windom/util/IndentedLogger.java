@@ -38,4 +38,12 @@ public class IndentedLogger {
 		logger.debug(indentString + message, args);
 	}
 	
+	public boolean isInfoEnabled() {
+		return logger.isInfoEnabled();
+	}
+	
+	public boolean isDebugEnabled() {
+		return logger.isDebugEnabled();
+	}
+	
 }

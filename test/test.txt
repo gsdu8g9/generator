@@ -1,12 +1,12 @@
-s -> 'alma' 'korte' +alma @alma;
+#s -> 'alma' 'korte' +alma @alma;
 
-#s -> nev 'es' nev 'baratok' 'es meg van' nev 'is';
-#nev -> !(@feri) 'Feri' +feri
-#    |  !(@geza) 'Geza' +geza
-#    |  !(@pisti) 'Pisti' +pisti
-#    |  !(@aladar) 'Aladar' +aladar
-#    |  !(@bela) 'Bela' +bela
-#    |  !(@jozsef) 'Jozsef' +jozsef;
+s -> nev 'es' nev 'baratok' 'es meg van' nev 'is';
+nev -> !@feri 'Feri' +feri
+    |  !@geza 'Geza' +geza
+    |  !@pisti 'Pisti' +pisti
+    |  !@aladar 'Aladar' +aladar
+    |  !@bela 'Bela' +bela
+    |  !@jozsef 'Jozsef' +jozsef;
 
 #s -> nev 'es' nev 'baratok';
 #nev -> [!] @feri ('Geza' +geza | 'Aladar' +aladar) |
