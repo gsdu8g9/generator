@@ -1,5 +1,4 @@
-s -> $a @a;
-a -> 'alma';
+s -> 'alma' 'korte' +alma @alma;
 
 #s -> nev 'es' nev 'baratok' 'es meg van' nev 'is';
 #nev -> !(@feri) 'Feri' +feri

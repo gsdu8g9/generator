@@ -59,13 +59,10 @@ public class IterativeGenerator extends AbstractGenerator {
 			currentCtx = start.getBacktrackCtx().branch();
 			
 			while (true) {
-					
 				NodeInstance nodeInstance = current.getNodeInstance();
 				Node node = nodeInstance.getNode();
 				
 				log.info("");
-				log.info("");
-				log.info("==============================");
 				log.info("waypoint: {}", current);
 				log.info("ctx: {}", currentCtx);
 				log.info("backtrack:");
@@ -74,116 +71,100 @@ public class IterativeGenerator extends AbstractGenerator {
 				}
 				log.info("==============================");
 				
-				if (true) {
-				//if (node instanceof Symbol) {
-					RuleInstance ruleInstance = nodeInstance.getRuleInstance();
-					
-					if (ruleInstance == null) {
-						if (current.getApplicableRules().isEmpty()) {
-							if (!backtrack()) return;
-							continue;
-						}
-						Rule rule = chooseAndRemoveRule(current.getApplicableRules());
-						ruleInstance = new RuleInstance(rule);
-						nodeInstance = new NodeInstance(nodeInstance.getNode(), ruleInstance);
-						current.setNodeInstance(nodeInstance);
-						expandIdx = 0;
+				RuleInstance ruleInstance = nodeInstance.getRuleInstance();
+				
+				if (ruleInstance == null) {
+					if (current.getApplicableRules().isEmpty()) {
+						if (!backtrack()) return;
+						continue;
 					}
-					
-					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
-						if (node instanceof Annotated) {
-							Annotated annotated = (Annotated) node;
-							switch (annotated.getAnnotation()) {
-							case PERM:
-								log.info("{} bound", annotated);
-								currentCtx.setPermNodeInstance(annotated, nodeInstance);
-								if (annotated.getNode() instanceof Symbol) {
-									currentCtx.addTag(annotated.getNode().getName());
-								}
-								if (!goup()) return;
-								break;
-							case SUCCEEDS:
-								log.info("{} succeeded", node);
-								currentCtx = current.getBacktrackCtx().branch();
-								backtrack = current.getBacktrack();
-								current.setNodeInstance(new NodeInstance(node));
-								if (!goup()) return;
-								break;
-							case FAILS:
-								log.info("{} failed", node);
-								backtrack = current.getBacktrack();
-								if (!backtrack()) return;
-								break;
-							default:
-								throw new RuntimeException("this cannot be");
+					Rule rule = chooseAndRemoveRule(current.getApplicableRules());
+					ruleInstance = new RuleInstance(rule);
+					nodeInstance = new NodeInstance(nodeInstance.getNode(), ruleInstance);
+					current.setNodeInstance(nodeInstance);
+					expandIdx = 0;
+				}
+				
+				if (expandIdx >= ruleInstance.getRule().getRight().size()) {
+					if (node instanceof Annotated) {
+						Annotated annotated = (Annotated) node;
+						switch (annotated.getAnnotation()) {
+						case PERM:
+							log.info("{} bound", annotated);
+							currentCtx.setPermNodeInstance(annotated, nodeInstance);
+							if (annotated.getNode() instanceof Symbol) {
+								currentCtx.addTag(annotated.getNode().getName());
 							}
-						} else {
-							currentCtx.addTag(node.getName());
 							if (!goup()) return;
+							break;
+						case SUCCEEDS:
+							log.info("{} succeeded", node);
+							currentCtx = current.getBacktrackCtx().branch();
+							backtrack = current.getBacktrack();
+							current.setNodeInstance(new NodeInstance(node));
+							if (!goup()) return;
+							break;
+						case FAILS:
+							log.info("{} failed", node);
+							backtrack = current.getBacktrack();
+							if (!backtrack()) return;
+							break;
+						default:
+							throw new RuntimeException("this cannot be");
 						}
 					} else {
-						log.info("doing {}", expandIdx);
-						Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
-						if (nextNode instanceof Terminal) {
-							log.info("terminal {}", nextNode);
-//							ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-//							expandIdx++;
-							setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));
-							continue;
-						}
-						if (nextNode instanceof Annotated) {
-							Annotated annotated = (Annotated) nextNode;
-							switch (annotated.getAnnotation()) {
-							case PERM:
-								NodeInstance permNodeInstance = currentCtx.getPermNodeInstance(annotated);
-								log.info("{} bound: {}", annotated, (permNodeInstance != null));
-								if (permNodeInstance != null) {
-//									ruleInstance.getNodeInstances().add(permNodeInstance);
-//									expandIdx++;
-									setChild(nodeInstance, expandIdx++, permNodeInstance);
-									continue;
-								}
-								break;
-							case ADD_TAG:
-								log.info("{} applied", annotated);
-								currentCtx.addTag(annotated.getNode().getName());
-//								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-//								expandIdx++;
-								setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
-								continue;
-							case DEL_TAG:
-								log.info("{} applied", annotated);
-								currentCtx.delTag(annotated.getNode().getName());
-//								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-//								expandIdx++;
-								setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
-								continue;
-							case CHECK_TAG:
-								boolean result = currentCtx.checkTag(annotated.getNode().getName());
-								log.info("{} result: {}", annotated, result);
-								if (result) {
-//									ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-//									expandIdx++;
-									setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));									
-									continue;
-								} else {
-									if (!backtrack()) return;
-									continue;
-								}
-							}
-								
-						}
-						current = new Waypoint(backtrack, current, expandIdx, nextNode, 
-								(expandIdx > 0) ? currentCtx.branch() : current.getBacktrackCtx());
-						if (current.isDecisionPoint()) {
-							backtrack = current;
-						}
+						currentCtx.addTag(node.getName());
+						if (!goup()) return;
 					}
 				} else {
-					throw new RuntimeException("not yet ;)");
+					log.info("doing {}", expandIdx);
+					Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
+					if (nextNode instanceof Terminal) {
+						log.info("terminal {}", nextNode);
+						setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));
+						continue;
+					}
+					if (nextNode instanceof Annotated) {
+						Annotated annotated = (Annotated) nextNode;
+						switch (annotated.getAnnotation()) {
+						case PERM:
+							NodeInstance permNodeInstance = currentCtx.getPermNodeInstance(annotated);
+							log.info("{} bound: {}", annotated, (permNodeInstance != null));
+							if (permNodeInstance != null) {
+								setChild(nodeInstance, expandIdx++, permNodeInstance);
+								continue;
+							}
+							break;
+						case ADD_TAG:
+							log.info("{} applied", annotated);
+							currentCtx.addTag(annotated.getNode().getName());
+							setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
+							continue;
+						case DEL_TAG:
+							log.info("{} applied", annotated);
+							currentCtx.delTag(annotated.getNode().getName());
+							setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
+							continue;
+						case CHECK_TAG:
+							boolean result = currentCtx.checkTag(annotated.getNode().getName());
+							log.info("{} result: {}", annotated, result);
+							if (result) {
+								setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));									
+								continue;
+							} else {
+								if (!backtrack()) return;
+								continue;
+							}
+						}
+							
+					}
+					current = new Waypoint(backtrack, current, expandIdx, nextNode, 
+							(expandIdx > 0) ? currentCtx.branch() : current.getBacktrackCtx());
+					if (current.isDecisionPoint()) {
+						backtrack = current;
+					}
 				}
 			}
-			
 		}
 		
 		private boolean backtrack() {
@@ -216,19 +197,6 @@ public class IterativeGenerator extends AbstractGenerator {
 			if (current == null) return false;
 			
 			setChild(current.getNodeInstance(), expandIdx++, nodeInstance);
-			
-//			List<NodeInstance> nodeInstances = current
-//					.getNodeInstance()
-//					.getRuleInstance()
-//					.getNodeInstances();
-//			
-//			if (expandIdx == nodeInstances.size()) {
-//				nodeInstances.add(nodeInstance);
-//			} else {
-//				nodeInstances.set(expandIdx, nodeInstance);
-//			}
-//			
-//			expandIdx++;
 			
 			return true;
 		}
