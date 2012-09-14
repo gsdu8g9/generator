@@ -92,8 +92,16 @@ public class IterativeGenerator extends AbstractGenerator {
 					
 					if (expandIdx >= ruleInstance.getRule().getRight().size()) {
 						if (node instanceof Annotated) {
-							Annotation annotation = ((Annotated) node).getAnnotation();
-							switch (annotation) {
+							Annotated annotated = (Annotated) node;
+							switch (annotated.getAnnotation()) {
+							case PERM:
+								log.info("{} bound", annotated);
+								currentCtx.setPermNodeInstance(annotated, nodeInstance);
+								if (annotated.getNode() instanceof Symbol) {
+									currentCtx.addTag(annotated.getNode().getName());
+								}
+								if (!goup()) return;
+								break;
 							case SUCCEEDS:
 								log.info("{} succeeded", node);
 								currentCtx = current.getBacktrackCtx().branch();
@@ -118,31 +126,45 @@ public class IterativeGenerator extends AbstractGenerator {
 						Node nextNode = ruleInstance.getRule().getRight().get(expandIdx);
 						if (nextNode instanceof Terminal) {
 							log.info("terminal {}", nextNode);
-							ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-							expandIdx++;
+//							ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+//							expandIdx++;
+							setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));
 							continue;
 						}
 						if (nextNode instanceof Annotated) {
 							Annotated annotated = (Annotated) nextNode;
 							switch (annotated.getAnnotation()) {
+							case PERM:
+								NodeInstance permNodeInstance = currentCtx.getPermNodeInstance(annotated);
+								log.info("{} bound: {}", annotated, (permNodeInstance != null));
+								if (permNodeInstance != null) {
+//									ruleInstance.getNodeInstances().add(permNodeInstance);
+//									expandIdx++;
+									setChild(nodeInstance, expandIdx++, permNodeInstance);
+									continue;
+								}
+								break;
 							case ADD_TAG:
 								log.info("{} applied", annotated);
 								currentCtx.addTag(annotated.getNode().getName());
-								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-								expandIdx++;
+//								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+//								expandIdx++;
+								setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
 								continue;
 							case DEL_TAG:
 								log.info("{} applied", annotated);
 								currentCtx.delTag(annotated.getNode().getName());
-								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-								expandIdx++;
+//								ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+//								expandIdx++;
+								setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));								
 								continue;
 							case CHECK_TAG:
 								boolean result = currentCtx.checkTag(annotated.getNode().getName());
 								log.info("{} result: {}", annotated, result);
 								if (result) {
-									ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
-									expandIdx++;
+//									ruleInstance.getNodeInstances().add(new NodeInstance(nextNode));
+//									expandIdx++;
+									setChild(nodeInstance, expandIdx++, new NodeInstance(nextNode));									
 									continue;
 								} else {
 									if (!backtrack()) return;
@@ -193,22 +215,33 @@ public class IterativeGenerator extends AbstractGenerator {
 			current = current.getParent();
 			if (current == null) return false;
 			
-			List<NodeInstance> nodeInstances = current
-					.getNodeInstance()
-					.getRuleInstance()
-					.getNodeInstances();
+			setChild(current.getNodeInstance(), expandIdx++, nodeInstance);
 			
-			if (expandIdx == nodeInstances.size()) {
-				nodeInstances.add(nodeInstance);
-			} else {
-				nodeInstances.set(expandIdx, nodeInstance);
-			}
-			
-			expandIdx++;
+//			List<NodeInstance> nodeInstances = current
+//					.getNodeInstance()
+//					.getRuleInstance()
+//					.getNodeInstances();
+//			
+//			if (expandIdx == nodeInstances.size()) {
+//				nodeInstances.add(nodeInstance);
+//			} else {
+//				nodeInstances.set(expandIdx, nodeInstance);
+//			}
+//			
+//			expandIdx++;
 			
 			return true;
 		}
 		
+	}
+	
+	private static void setChild(NodeInstance parentInstance, int idx, NodeInstance childInstance) {
+		List<NodeInstance> childInstances = parentInstance.getRuleInstance().getNodeInstances();
+		if (idx == childInstances.size()) {
+			childInstances.add(childInstance);				
+		} else {
+			childInstances.set(idx, childInstance);
+		}
 	}
 	
 }

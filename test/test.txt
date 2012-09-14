@@ -1,5 +1,5 @@
-s -> [!] a @kutya | !@a 'lofasz';
-a -> 'a';
+s -> $a @a;
+a -> 'alma';
 
 #s -> nev 'es' nev 'baratok' 'es meg van' nev 'is';
 #nev -> !(@feri) 'Feri' +feri
