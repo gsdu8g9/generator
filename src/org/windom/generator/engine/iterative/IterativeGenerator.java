@@ -39,10 +39,17 @@ public class IterativeGenerator extends AbstractGenerator {
 		Symbol origin = new Symbol("#origin");
 		origin.getRules().add(new Rule(0, origin, Arrays.asList(node)));
 		Waypoint initial = new Waypoint(null, null, 0, origin, ctx);
-		new Instance().generate(initial);
+		
+		Instance instance = new Instance();
+		instance.generate(initial);
+		
 		RuleInstance ruleInstance = initial.getNodeInstance().getRuleInstance();
-		log.info(">> success: {}", ruleInstance != null);
-		return ruleInstance != null ? ruleInstance.getNodeInstances().get(0) : null;
+		NodeInstance nodeInstance = (ruleInstance != null) ? ruleInstance.getNodeInstances().get(0) : null;
+		
+		log.debug("success: {}", nodeInstance != null);
+		log.debug("final context: {}", instance.currentCtx);
+		
+		return nodeInstance;
 	}
 	
 	private class Instance {
