@@ -45,15 +45,19 @@ public class IterativeGenerator extends AbstractGenerator {
 		
 		RuleInstance ruleInstance = initial.getNodeInstance().getRuleInstance();
 		NodeInstance nodeInstance = (ruleInstance != null) ? ruleInstance.getNodeInstances().get(0) : null;
-		
-		log.debug("success: {}", nodeInstance != null);
-		log.debug("final context: {}", instance.currentCtx);
-		
+
+		if (log.isDebugEnabled()) {
+			log.debug("cycles: {}", instance.cycles);
+			log.debug("success: {}", nodeInstance != null);
+			log.debug("final context: {}", instance.currentCtx);
+		}
+			
 		return nodeInstance;
 	}
 	
 	private class Instance {
 		
+		private int cycles;
 		private Waypoint current;
 		private Waypoint backtrack;
 		private int expandIdx;
@@ -65,7 +69,7 @@ public class IterativeGenerator extends AbstractGenerator {
 			expandIdx = 0;
 			currentCtx = start.getBacktrackCtx().branch();
 			
-			mainCycle: while (true) {
+			mainCycle: for(cycles=0;; cycles++) {
 				if (log.isDebugEnabled())
 					logCycle();
 				
