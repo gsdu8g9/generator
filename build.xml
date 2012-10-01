@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="build-jar" name="generator">
 	
-    <target name="build-jar">
-    	<mkdir dir="dist" />
+	<target name="init">
+		<mkdir dir="dist" />
+	</target>
+	
+    <target name="build-jar" depends="init">
         <jar destfile="dist/generator.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="org.windom.test.Main"/>
@@ -12,5 +15,13 @@
         	<zipgroupfileset dir="lib" includes="*.jar"/>
         </jar>
     </target>
+	
+	<target name="build-core" depends="init">
+		<jar destfile="dist/generator-core.jar">
+			<fileset dir="bin">
+				<include name="org/windom/generator/**"/>
+			</fileset>			
+		</jar>
+	</target>
 	
 </project>
