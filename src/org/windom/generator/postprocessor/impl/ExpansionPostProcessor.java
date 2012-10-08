@@ -7,7 +7,6 @@ import java.util.List;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
 import org.windom.generator.postprocessor.PostProcessor;
-import org.windom.generator.util.traversal.Evaluator;
 import org.windom.generator.util.traversal.Traversal;
 import org.windom.generator.util.traversal.Visitor;
 
@@ -17,11 +16,11 @@ public class ExpansionPostProcessor implements PostProcessor {
 	public String process(TreeInstance treeInstance) {
 		NodeInstance startInstance = treeInstance.getStartInstance();
 		ExpansionWalker walker = new ExpansionWalker(startInstance);
-		Traversal.depthFirst(startInstance, walker, walker);
+		Traversal.depthFirst(startInstance, walker);
 		return walker.getResult();
 	}	
 	
-	private class ExpansionWalker implements Visitor<NodeInstance>, Evaluator<NodeInstance> {
+	private class ExpansionWalker implements Visitor<NodeInstance> {
 		
 		private final List<NodeInstance> done = new ArrayList<NodeInstance>();
 		private final List<NodeInstance> todo = new LinkedList<NodeInstance>();
@@ -59,10 +58,12 @@ public class ExpansionPostProcessor implements PostProcessor {
 			return result.toString();
 		}
 		
+		@Override
 		public boolean prune(NodeInstance nodeInstance) {
 			return nodeInstance.isOnLimit();
 		}
 		
+		@Override
 		public void visit(NodeInstance nodeInstance) {
 			if (todo.remove(0) != nodeInstance) {
 				throw new RuntimeException("Inconsistent generation");

@@ -21,7 +21,7 @@ public class Definition {
 	private Map<String,Symbol> getSymbolMap() {
 		if (symbolMap == null) {
 			SymbolMapper symbolMapper = new SymbolMapper();
-			Traversal.breadthFirst(start, symbolMapper, symbolMapper);
+			Traversal.breadthFirst(start, symbolMapper);
 			symbolMap = symbolMapper.getSymbolMap();
 		}
 		return symbolMap;

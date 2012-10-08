@@ -5,10 +5,9 @@ import java.util.List;
 
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Terminal;
-import org.windom.generator.util.traversal.Evaluator;
 import org.windom.generator.util.traversal.Visitor;
 
-public class Limiter implements Visitor<NodeInstance>, Evaluator<NodeInstance> {
+public class Limiter implements Visitor<NodeInstance> {
 
 	private final List<Node> limit = new ArrayList<Node>();
 	private final boolean onlyTerminals;

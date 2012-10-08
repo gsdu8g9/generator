@@ -3,10 +3,9 @@ package org.windom.generator.definition;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.windom.generator.util.traversal.Evaluator;
 import org.windom.generator.util.traversal.Visitor;
 
-public class SymbolMapper implements Visitor<Node>, Evaluator<Node> {
+public class SymbolMapper implements Visitor<Node> {
 
 	private final Map<String,Symbol> symbolMap = new HashMap<String,Symbol>();
 	

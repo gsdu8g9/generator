@@ -15,7 +15,7 @@ public class TreeInstance {
 
 	public List<Node> getLimit(boolean onlyTerminals) {
 		Limiter limiter = new Limiter(onlyTerminals);
-		Traversal.depthFirst(startInstance, limiter, limiter);
+		Traversal.depthFirst(startInstance, limiter);
 		return limiter.getLimit();
 	}
 	
