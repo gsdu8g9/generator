@@ -3,7 +3,7 @@ package org.windom.generator.engine;
 import java.util.List;
 
 import org.windom.generator.definition.Node;
-import org.windom.util.traversal.Traversal;
+import org.windom.generator.util.traversal.Traversal;
 
 public class TreeInstance {
 

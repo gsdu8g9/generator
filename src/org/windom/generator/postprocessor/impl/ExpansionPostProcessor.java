@@ -7,9 +7,9 @@ import java.util.List;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
 import org.windom.generator.postprocessor.PostProcessor;
-import org.windom.util.traversal.Evaluator;
-import org.windom.util.traversal.Traversal;
-import org.windom.util.traversal.Visitor;
+import org.windom.generator.util.traversal.Evaluator;
+import org.windom.generator.util.traversal.Traversal;
+import org.windom.generator.util.traversal.Visitor;
 
 public class ExpansionPostProcessor implements PostProcessor {
 

@@ -11,7 +11,7 @@ import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.impl.BuilderImpl;
 import org.windom.generator.input.plain.impl.ParserImpl;
 import org.windom.generator.input.plain.impl.ScannerImpl;
-import org.windom.util.Utils;
+import org.windom.generator.util.Utils;
 
 public class PlainInput implements Input {
 

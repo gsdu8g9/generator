@@ -1,4 +1,4 @@
-package org.windom.util.traversal;
+package org.windom.generator.util.traversal;
 
 import java.util.List;
 

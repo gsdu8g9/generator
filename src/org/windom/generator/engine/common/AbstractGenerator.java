@@ -10,7 +10,7 @@ import org.windom.generator.engine.Generator;
 import org.windom.generator.engine.GeneratorException;
 import org.windom.generator.engine.NodeInstance;
 import org.windom.generator.engine.TreeInstance;
-import org.windom.util.IndentedLogger;
+import org.windom.generator.util.IndentedLogger;
 
 public abstract class AbstractGenerator implements Generator {
 

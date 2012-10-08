@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.windom.generator.definition.Node;
-import org.windom.util.traversal.TreeNode;
+import org.windom.generator.util.traversal.TreeNode;
 
 public class NodeInstance implements TreeNode<NodeInstance> {
 

@@ -3,7 +3,7 @@ package org.windom.generator.definition;
 import java.util.Collection;
 import java.util.Map;
 
-import org.windom.util.traversal.Traversal;
+import org.windom.generator.util.traversal.Traversal;
 
 public class Definition {
 
