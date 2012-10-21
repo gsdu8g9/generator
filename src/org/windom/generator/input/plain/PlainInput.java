@@ -25,7 +25,7 @@ public class PlainInput implements Input {
 	
 	@Override
 	public Definition read() throws InputException {
-		Builder builder = new BuilderImpl(filePath);
+		Builder builder = new BuilderImpl();
 		read(builder);
 		return builder.build();
 	}

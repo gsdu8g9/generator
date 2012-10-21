@@ -2,10 +2,8 @@ package org.windom.generator.input.plain.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +13,8 @@ import org.windom.generator.definition.Definition;
 import org.windom.generator.definition.Node;
 import org.windom.generator.definition.Rule;
 import org.windom.generator.definition.Symbol;
-import org.windom.generator.definition.Terminal;
 import org.windom.generator.input.InputException;
 import org.windom.generator.input.plain.Builder;
-import org.windom.generator.input.plain.PlainInput;
 
 public class BuilderImpl implements Builder {
 	
@@ -30,19 +26,6 @@ public class BuilderImpl implements Builder {
 	
 	private static final String PHANTOM_SYMBOL_MASK = "#%d";
 	private int phantomSymbolCount = 0;
-	
-	private static final String 
-			META_PREFIX  = "__",
-			META_ECHO    = "echo",
-			META_INCLUDE = "include";
-	
-	private final Set<String> includedResources = new HashSet<String>();
-
-	public BuilderImpl(String resourceName) {
-		if (resourceName != null) {
-			includedResources.add(resourceName);
-		}
-	}
 	
 	@Override
 	public Definition build() throws InputException {
@@ -62,23 +45,14 @@ public class BuilderImpl implements Builder {
 		for (Rule rightSide : rightSides) {
 			List<Node> right = rightSide.getRight();
 			for (int i=0; i<right.size(); i++) {
-				Node rightNode = right.get(i);
-				if (isMetaNode(rightNode)) {
-					throw new InputException(
-						"Meta symbol found on right-side of a rule: " + rightNode);
-				}
-				right.set(i,resolveNode(rightNode));
+				right.set(i,resolveNode(right.get(i)));
 			}
 			Rule rule = new Rule(rightSide.getProbability(), symbol, right);
-			if (!symbol.getRules().contains(rule) || isMetaNode(symbol)) {
+			if (!symbol.getRules().contains(rule)) {
 				symbol.getRules().add(rule);
 			} else {
 				log.warn("Ignoring duplicate rule: {}",rule);
 			}
-		}
-		if (isMetaNode(symbol)) {
-			handleMetaSymbol(symbol);
-			return null;
 		}
 		if (start == null && left != null) {
 			start = symbol;
@@ -110,8 +84,6 @@ public class BuilderImpl implements Builder {
 	private Symbol resolveSymbol(Symbol symbol) {
 		if (symbol == null) {
 			return makePhantomSymbol();
-		} else if (isMetaNode(symbol)) {
-			return symbol;
 		} else if (symbolMap.containsKey(symbol.getName())) {
 			return symbolMap.get(symbol.getName());
 		} else {
@@ -123,57 +95,7 @@ public class BuilderImpl implements Builder {
 	private Symbol makePhantomSymbol() {
 		return new Symbol(String.format(PHANTOM_SYMBOL_MASK, phantomSymbolCount++));
 	}
-
-	private boolean isMetaNode(Node node) {
-		return node.getSymbol() != null &&
-				node.getSymbol().getName().startsWith(META_PREFIX);
-	}
-	
-	private void handleMetaSymbol(Symbol symbol) throws InputException {
-		String metaOp = symbol.getName().substring(META_PREFIX.length());
-		if (META_ECHO.equals(metaOp)) {
-			StringBuilder sb = new StringBuilder();
-			for (Rule rule : symbol.getRules()) {
-				sb.append('\n');
-				boolean firstNode = true;
-				for (Node rightNode : rule.getRight()) {
-					if (firstNode) {
-						firstNode = false;
-					} else {
-						sb.append(' ');
-					}
-					if (rightNode instanceof Terminal) {
-						sb.append(((Terminal) rightNode).getText());
-					} else {
-						sb.append(rightNode);
-					}
-				}
-			}
-			log.info("{}", sb.toString().replaceAll("(\\r?\\n)", "$1##\t"));
-		} else if (META_INCLUDE.equals(metaOp)) {
-			for (Rule rule : symbol.getRules()) {
-				for (Node rightNode : rule.getRight()) {
-					if (rightNode instanceof Terminal) {
-						include(((Terminal) rightNode).getText());
-					} else {
-						log.warn("Ignoring nonterminal in include rule: {}", rightNode);
-					}
-				}
-			}
-		} else {
-			log.warn("Unrecognized meta symbol: {}", metaOp);
-		}
-	}
-	
-	private void include(String resouceName) throws InputException {
-		if (!includedResources.contains(resouceName)) {
-			includedResources.add(resouceName);
-			new PlainInput(resouceName).read(this);
-		} else {
-			log.debug("{} is already included", resouceName);
-		}
-	}
-	
+		
 	private void completeTags() {
 		for (Symbol symbol : symbolMap.values()) {
 			if (symbol.getRules().isEmpty() && (
